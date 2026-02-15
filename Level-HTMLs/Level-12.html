@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Level 0 | Database</title>
+    <link rel="stylesheet" href="master-style.css">
+</head>
+<body class="article-page">
+
+<nav id="top-nav">
+  <a href="../index.html" class="nav-btn">← BACK</a>
+  <input type="text" id="search-box" placeholder="Search page content...">
+  <button id="search-btn-nav" class="nav-btn" onclick="searchText()">Search</button>
+  <div class="nav-title">[Backrooms Level Database]</div>
+</nav>
+
+<div class="page-wrapper">
+  
+  <div class="level-header-area">
+    <div class="image-box">
+      <img src="../Images/placeholder.png" alt="Level View">
+    </div>
+
+   <div class="title-container">
+    <div class="title-group">
+        <h1 class="level-id">Level ###</h1>
+        <h2 class="level-name">"N/A"</h2>
+    </div>
+    
+    <div class="tags-row">
+        <span class="tag orange">Survivability: N/A</span>
+        <span class="tag yellow">Generation: N/A</span>
+    </div>
+
+    <div class="data-box">
+        <div class="data-item"><strong>ENTITIES:</strong> N/A</div>
+        <div class="data-item"><strong>HABITABILITY:</strong> N/A</div>
+        <div class="data-item"><strong>SIZE:</strong> N/A</div>
+    </div>
+</div>
+    </div>
+        <div class="information-box">
+            <div class="section-label">Data Entry: Information</div>
+            <div class="description-text" id="info-content">
+        </div>
+    </div>
+</div>
+
+<script>
+function searchText() {
+  const box = document.getElementById('search-box');
+  const query = box.value.trim();
+  const content = document.getElementById('info-content');
+
+  content.innerHTML = content.innerHTML.replace(/<span class="highlight">(.*?)<\/span>/g, '$1');
+
+  if (query === "") return;
+
+  const regex = new RegExp(`(${query})`, 'gi');
+
+  const originalHTML = content.innerHTML;
+  const newHTML = originalHTML.replace(regex, '<span class="highlight">$1</span>');
+
+  if (originalHTML !== newHTML) {
+    content.innerHTML = newHTML;
+    
+    const firstMatch = document.querySelector('.highlight');
+    if (firstMatch) {
+      firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } else {
+    box.style.borderColor = "#ff3333";
+    setTimeout(() => { box.style.borderColor = "#0099ff"; }, 500);
+  }
+}
+
+document.getElementById('search-box').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') searchText();
+});
+</script>
+
+</body>
+</html>

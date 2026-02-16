@@ -191,11 +191,16 @@ canvas {
   border: 1px solid;
   letter-spacing: 1.5px;
 }
-
+.tag.dark-red { color: #cc0000; border-color: #cc0000; background: rgba(204, 0, 0, 0.15); }
 .tag.red { color: #ff3333; border-color: #ff3333; background: rgba(255, 51, 51, 0.15); }
+.tag.red-orange { color: #ff6633; border-color: #ff6633; background: rgba(255, 102, 51, 0.15); }
 .tag.orange { color: #ff6600; border-color: #ff6600; background: rgba(255, 102, 0, 0.15); }
 .tag.yellow { color: #ffcc00; border-color: #ffcc00; background: rgba(255, 204, 0, 0.15); }
 .tag.green { color: #00ff66; border-color: #00ff66; background: rgba(0, 255, 102, 0.15); }
+.tag.dark-green { color: #009933; border-color: #009933; background: rgba(0, 153, 51, 0.15); }
+.tag.blue { color: #3399ff; border-color: #3399ff; background: rgba(51, 153, 255, 0.15); }
+.tag.purple { color: #cc66ff; border-color: #cc66ff; background: rgba(204, 102, 255, 0.15); }
+.tag.pink { color: #ff66cc; border-color: #ff66cc; background: rgba(255, 102, 204, 0.15); }
 
 .information-box {
   width: 100%;

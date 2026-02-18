@@ -1,44 +1,44 @@
 const items = [
-  { label: "Level 0", header: "Infinite Yellow Corridors", link: "Level-HTMLs/level-0.html", image: "Images/level_0.png" },
-  { label: "Level 0.35", header: "The Forgotten", link: "Level-HTMLs/level-0.35.html", image: "Images/placeholder.png" },
-  { label: "Level 0.5", header: "The Old Orange Halls", link: "Level-HTMLs/level-0.5.html", image: "Images/placeholder.png" },
-  { label: "Level 0.7", header: "Viridescent Halls", link: "Level-HTMLs/level-0.7.html", image: "Images/placeholder.png" },
-  { label: "Level 0.775", header: "Paradise", link: "Level-HTMLs/level-0.775.html", image: "Images/placeholder.png" },
-  { label: "Level 1", header: "Parking Garage", link: "Level-HTMLs/level-1.html", image: "Images/level_1.png" },
-  { label: "Level 1.0090", header: "Memory Museum", link: "Level-HTMLs/level-1.0090.html", image: "Images/placeholder.png" },
-  { label: "Level 2", header: "Level-2", link: "Level-HTMLs/level-2.html", image: "Images/placeholder.png" },
-  { label: "Level 3", header: "Level-3", link: "Level-HTMLs/level-3.html", image: "Images/placeholder.png" },
-  { label: "Level 4", header: "Level-4", link: "Level-HTMLs/level-4.html", image: "Images/placeholder.png" },
-  { label: "Level 5", header: "Level-5", link: "Level-HTMLs/level-5.html", image: "Images/placeholder.png" },
-  { label: "Level 6", header: "Level-6", link: "Level-HTMLs/level-6.html", image: "Images/placeholder.png" },
-  { label: "Level 6.1", header: "Level-6.1", link: "Level-HTMLs/level-6.1.html", image: "Images/placeholder.png" },
-  { label: "Level 6.2", header: "Level-6.2", link: "Level-HTMLs/level-6.2.html", image: "Images/placeholder.png" },
-  { label: "Level 6.3", header: "Level-6.3", link: "Level-HTMLs/level-6.3.html", image: "Images/placeholder.png" },
-  { label: "Level 7", header: "Level-7", link: "Level-HTMLs/level-7.html", image: "Images/placeholder.png" },
-  { label: "Level 8", header: "Level-8", link: "Level-HTMLs/level-8.html", image: "Images/placeholder.png" },
-  { label: "Level 8.181", header: "Level-8.181", link: "Level-HTMLs/level-8.181.html", image: "Images/placeholder.png" },
-  { label: "Level 9", header: "Level-9", link: "Level-HTMLs/level-9.html", image: "Images/placeholder.png" },
-  { label: "Level 10", header: "Level-10", link: "Level-HTMLs/level-10.html", image: "Images/placeholder.png" },
+  { label: "Level 0", header: "Infinite Yellow Corridors", link: "../Level-HTMLs/level-0.html", image: "Images/level_0.png" },
+  { label: "Level 0.35", header: "The Forgotten", link: "../Level-HTMLs/level-0.35.html", image: "Images/placeholder.png" },
+  { label: "Level 0.5", header: "The Old Orange Halls", link: "../Level-HTMLs/level-0.5.html", image: "Images/placeholder.png" },
+  { label: "Level 0.7", header: "Viridescent Halls", link: "../Level-HTMLs/level-0.7.html", image: "Images/placeholder.png" },
+  { label: "Level 0.775", header: "Paradise", link: "../Level-HTMLs/level-0.775.html", image: "Images/placeholder.png" },
+  { label: "Level 1", header: "Parking Garage", link: "../Level-HTMLs/level-1.html", image: "Images/level_1.png" },
+  { label: "Level 1.0090", header: "Memory Museum", link: "../Level-HTMLs/level-1.0090.html", image: "Images/placeholder.png" },
+  { label: "Level 2", header: "Level-2", link: "../Level-HTMLs/level-2.html", image: "Images/placeholder.png" },
+  { label: "Level 3", header: "Level-3", link: "../Level-HTMLs/level-3.html", image: "Images/placeholder.png" },
+  { label: "Level 4", header: "Level-4", link: "../Level-HTMLs/level-4.html", image: "Images/placeholder.png" },
+  { label: "Level 5", header: "Level-5", link: "../Level-HTMLs/level-5.html", image: "Images/placeholder.png" },
+  { label: "Level 6", header: "Level-6", link: "../Level-HTMLs/level-6.html", image: "Images/placeholder.png" },
+  { label: "Level 6.1", header: "Level-6.1", link: "../Level-HTMLs/level-6.1.html", image: "Images/placeholder.png" },
+  { label: "Level 6.2", header: "Level-6.2", link: "../Level-HTMLs/level-6.2.html", image: "Images/placeholder.png" },
+  { label: "Level 6.3", header: "Level-6.3", link: "../Level-HTMLs/level-6.3.html", image: "Images/placeholder.png" },
+  { label: "Level 7", header: "Level-7", link: "../Level-HTMLs/level-7.html", image: "Images/placeholder.png" },
+  { label: "Level 8", header: "Level-8", link: "../Level-HTMLs/level-8.html", image: "Images/placeholder.png" },
+  { label: "Level 8.181", header: "Level-8.181", link: "../Level-HTMLs/level-8.181.html", image: "Images/placeholder.png" },
+  { label: "Level 9", header: "Level-9", link: "../Level-HTMLs/level-9.html", image: "Images/placeholder.png" },
+  { label: "Level 10", header: "Level-10", link: "../Level-HTMLs/level-10.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 12", header: "Level-12", link: "Level-HTMLs/level-12.html", image: "Images/placeholder.png" },
+  { label: "Level 12", header: "Level-12", link: "../Level-HTMLs/level-12.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 19", header: "Level-19", link: "Level-HTMLs/level-19.html", image: "Images/placeholder.png" },
+  { label: "Level 19", header: "Level-19", link: "../Level-HTMLs/level-19.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 21", header: "Level-21", link: "Level-HTMLs/level-21.html", image: "Images/placeholder.png" },
+  { label: "Level 21", header: "Level-21", link: "../Level-HTMLs/level-21.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 33", header: "Level-33", link: "Level-HTMLs/level-33.html", image: "Images/placeholder.png" },
+  { label: "Level 33", header: "Level-33", link: "../Level-HTMLs/level-33.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 37", header: "Level-37", link: "Level-HTMLs/level-37.html", image: "Images/placeholder.png" },
+  { label: "Level 37", header: "Level-37", link: "../Level-HTMLs/level-37.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 88", header: "Level-88", link: "Level-HTMLs/level-88.html", image: "Images/placeholder.png" },
+  { label: "Level 88", header: "Level-88", link: "../Level-HTMLs/level-88.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 124", header: "Level-124", link: "Level-HTMLs/level-124.html", image: "Images/placeholder.png" },
+  { label: "Level 124", header: "Level-124", link: "../Level-HTMLs/level-124.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 558", header: "Suburb Passageway", link: "Level-HTMLs/level-558.html", image: "Images/placeholder.png" },
+  { label: "Level 558", header: "Suburb Passageway", link: "../Level-HTMLs/level-558.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "Level 588", header: "Obsession", link: "Level-HTMLs/level-588.html", image: "Images/placeholder.png" },
+  { label: "Level 588", header: "Obsession", link: "../Level-HTMLs/level-588.html", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "12*Hub", header: "The Hub", link:"Level-HTMLs/hub.html", image:"Images/placeholder.png" },
+  { label: "12*Hub", header: "The Hub", link:"../Level-HTMLs/hub.html", image:"Images/placeholder.png" },
 ];
 
 const canvasEl = document.getElementById("canvas");
@@ -87,22 +87,21 @@ for (let i = 0; i < total; i++) {
   const baseOffset = hasAsterisk ? 750 : 0;
 
   if (!isBlank) {
-    const fullImgPath = data.image ? `${basePath}/${data.image}` : '';
-    
     el.innerHTML = `
       <span>${displayLabel}</span>
       <div class="menu">
-        <img class="menu-image" src="${fullImgPath}" alt="">
+        <img class="menu-image" src="${data.image || ''}" alt="">
         <div class="menu-header">${data.header}</div>
       </div>
     `;
-
     el.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'A' && data.link) {=
-        window.location.href = `${basePath}/${data.link}`;
+      if (e.target.tagName !== 'A' && data.link) {
+        window.location.href = data.link;
       }
     });
-}
+  } else {
+    el.classList.add('hidden-node');
+  }
 
   ui.appendChild(el);
   nodes.push({

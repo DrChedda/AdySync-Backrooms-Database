@@ -17,23 +17,6 @@
 
 <canvas id="canvas"></canvas>
 <div id="ui-layer"></div>
-<script>
-window.addEventListener('load', () => {
-  const savedPos = sessionStorage.getItem('backrooms_scroll_pos');
-  if (savedPos) {
-    setTimeout(() => {
-      window.scrollTo(0, parseInt(savedPos));
-      sessionStorage.removeItem('backrooms_scroll_pos');
-    }, 50);
-  }
-});
-
-nodes.forEach(node => {
-  node.element.addEventListener('click', () => {
-    sessionStorage.setItem('backrooms_scroll_pos', window.scrollY.toString());
-  });
-});
-</script>
 <script src="script.js"></script>
 </body>
 </html>

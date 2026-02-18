@@ -297,3 +297,61 @@ canvas {
 .data-box::-webkit-scrollbar-thumb:hover {
   background: #00d2ff;
 }
+
+/* --- Tabs Styles --- */
+.tabs-container {
+  display: flex;
+  width: calc(100% + 80px);
+  margin: -40px -40px 25px -40px;
+  padding: 0;
+  gap: 0;
+  border-bottom: 2px solid #0099ff;
+}
+
+.tab-button {
+  flex: 1;
+  background: rgba(0, 50, 100, 0.4);
+  border: none;
+  color: #55acee;
+  padding: 15px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  position: relative;
+  bottom: -2px;
+  min-width: 0;
+}
+
+.tab-button:hover {
+  background: rgba(0, 100, 180, 0.5);
+  color: #00d2ff;
+}
+
+.tab-button.active {
+  background: rgba(0, 153, 255, 0.2);
+  color: #00d2ff;
+  border-bottom: 3px solid #0099ff;
+  box-shadow: 0 0 8px rgba(0, 153, 255, 0.3);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -25,8 +25,8 @@
 
    <div class="title-container">
     <div class="title-group">
-        <h1 class="level-id">Level ###</h1>
-        <h2 class="level-name">"N/A"</h2>
+        <h1 class="level-id">Level 6</h1>
+        <h2 class="level-name">"Lights Out"</h2>
     </div>
     
     <div class="tags-row">
@@ -41,44 +41,20 @@
 </div>
     </div>
         <div class="information-box">
-            <div class="section-label">Data Entry: Information</div>
-            <div class="description-text" id="info-content">
-        </div>
+            <div class="tabs-container">
+                <button class="tab-button active" data-tab="info-tab">Information</button>
+                <button class="tab-button" data-tab="Landmarks-tab">Landmarks</button>
+            </div>
+            
+            <div class="tab-content active" id="info-tab">
+            </div>
+            <div class="tab-content" id="Landmarks-tab">
+                <p>Landmarks tab content.</p>
+            </div>
     </div>
 </div>
 
-<script>
-function searchText() {
-  const box = document.getElementById('search-box');
-  const query = box.value.trim();
-  const content = document.getElementById('info-content');
-
-  content.innerHTML = content.innerHTML.replace(/<span class="highlight">(.*?)<\/span>/g, '$1');
-
-  if (query === "") return;
-
-  const regex = new RegExp(`(${query})`, 'gi');
-
-  const originalHTML = content.innerHTML;
-  const newHTML = originalHTML.replace(regex, '<span class="highlight">$1</span>');
-
-  if (originalHTML !== newHTML) {
-    content.innerHTML = newHTML;
-    
-    const firstMatch = document.querySelector('.highlight');
-    if (firstMatch) {
-      firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  } else {
-    box.style.borderColor = "#ff3333";
-    setTimeout(() => { box.style.borderColor = "#0099ff"; }, 500);
-  }
-}
-
-document.getElementById('search-box').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') searchText();
-});
-</script>
+<script src="master-script.js"></script>
 
 </body>
 </html>

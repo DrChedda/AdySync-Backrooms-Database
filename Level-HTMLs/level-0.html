@@ -20,7 +20,7 @@
   
   <div class="level-header-area">
     <div class="image-box">
-      <img src="../Images/Level_0.png" alt="Level View">
+    <img src="../Images/Level_0.png" alt="Level View" loading="lazy" decoding="async">
     </div>
 
    <div class="title-container">
@@ -41,19 +41,109 @@
     </div>
 </div>
     </div>
-        <div class="information-box">
-            <div class="tabs-container">
-                <button class="tab-button active" data-tab="info-tab">Information</button>
-                <button class="tab-button" data-tab="Landmarks-tab">Landmarks</button>
+
+    <div class="information-box">
+        <div class="tabs-container">
+            <button class="tab-button active" data-tab="info-tab">Information</button>
+            <button class="tab-button" data-tab="Landmarks-tab">Landmarks</button>
+        </div>
+        
+        <div class="tab-content active" id="info-tab">
+            <div class="section-label">Data Entry: Survival Guide</div>
+            <div class="description-text">
+                <ul>
+                    <li>Travel in groups of two or more.</li>
+                    <li>Seek shelter at the M.E.G Embassy.</li>
+                    <li>Gather extra supplies before going out.</li>
+                    <li>Keep extra awareness; listen for sounds, look for movement.</li>
+                    <li>Identify the nearest crawlspace, dark area or cover-spot.</li>
+                </ul>
+            </div>
+
+            <div class="section-label">Random Generation & Anomalies</div>
+            <div class="description-text">
+                <h3>Noclip Points</h3>
+                <p>Noclip Points are phenomena found randomly across Level-0. They are easily distinguishable due to their discoloration, glitchy aura, unique sound, and odd architectural composition. Approaching the point too closely will lead you to noclip at random.</p>
+                
+                <h3>Pink Windows</h3>
+                <p>Pink Windows are rooms lit with pink light capable of killing mold and bacterial entities like tripods and mold zombies. They can be used as evasive resting spots or combat leverage.</p>
+
+                <h3>Trap Rooms</h3>
+                <p>Red-lit, dead-end rooms. If a traveler surpasses the wall boundary, the wall rapidly closes. If trapped, the floor opens into a black pit filled with no-clip particles, leading to certain death. <strong>Avoid these rooms.</strong></p>
+                
+                <h3>Crawlspaces</h3>
+                <p>Pocket rooms in Level-0’s complex structure that act as ideal spots for evading entities or gunfire.</p>
             </div>
             
-            <div class="tab-content active" id="info-tab">
-                <p>Level 0 ttttrtsaergrfg aergr</p>
-                <p>This buzz is notably loud...</p>
+            <div class="section-label">Survivor Spawns</div>
+            <div class="description-text">
+                <h3>The Office Room</h3>
+                <p>A small survivor spawn with dark-grey carpet and sofas. Notably close to the Level-0 Beacon.</p>
+                <p><strong>Navigation:</strong> Coordinates: -3051X, -1926Z | Distance: 1519</p>
             </div>
-            <div class="tab-content" id="Landmarks-tab">
-                <p>Landmarks tab content.</p>
-            </div>
+        </div>
+
+        <div class="tab-content" id="Landmarks-tab">
+    
+    <div class="section-label">Access Points: Level Entrances</div>
+    <div class="description-text">
+        <h3>The Chasm (Level-0.35)</h3>
+        <p>A giant spacious area with a large, mold-infested hole in the ceiling glowing light green. Leads to a new level; BPJ or E&L are required for access.</p>
+        <p><strong>Navigation:</strong> Coordinates: 5020 X, 3705 Z | Distance: 8549 Studs</p>
+
+        <h3>The Pitfalls (Level-0.5 Entrance)</h3>
+        <p>A long rectangular strip of ground filled with separated holes. The drop-down to Level-0.5 is located at the <strong>12th pit</strong> (the largest hole on the left).</p>
+        <p><strong>Navigation:</strong> Coordinates: -4671 X, -1099 Z | Distance: 3205 Studs</p>
+
+        <h3>Viridescent Heights (Level-0.7 Entrance)</h3>
+        <p>A dark room with a structure resembling the Viridescent Halls at the top. The entrance to Level-0.7 is a hole in the wall on the second floor that descends directly downwards.</p>
+
+        <h3>Orange Room (Level-0.775 Entrance)</h3>
+        <p>A room with an orange window and a concrete corridor. A metal door at the end of the corridor leads to Level-0.775.</p>
+        <p><strong>Navigation:</strong> Coordinates: 2421 X, 4987 Z | Distance: 7873 Studs</p>
+
+        <h3>Infmart Door (Level-9 Entrance)</h3>
+        <p>A safe settlement situated east of the ASYNC beacon. Features a Tier 1 crafting table, traders, and vending machines. This is the primary direct route to Level-9.</p>
+        <p><strong>Navigation:</strong> Coordinates: -1524 X, -1777 Z | Distance: 0 Studs (Beacon Site)</p>
+
+        <h3>Level-37 / Poolrooms Entrance</h3>
+        <p>Identified by a metal door and walls lined with pipes leaking a water-like substance. Does not require a key to open.</p>
+        <p><strong>Navigation:</strong> Coordinates: -2870 X, -195 Z | Distance: 2069 Studs</p>
+    </div>
+
+    <div class="section-label">Territory & Faction Strongholds</div>
+    <div class="description-text">
+        <h3>The Fortress (M.E.G. HQ)</h3>
+        <p>A massive expanse previously occupied by the Away Insurgency. Contains an armory, medbay, sleeping quarters, and a hidden underground bunker. Following a raid on June 7th, 2025, it is now M.E.G. property and serves as a UFA Headquarters.</p>
+        <p><strong>Navigation:</strong> East region, accessible via Northern Infinitelands entrance.</p>
+
+        <h3>Wayfinders Stronghold</h3>
+        <p>A forward operating base and trading outpost. Built with wooden tents, wagons, and lamps to house travelers and merchants.</p>
+
+        <h3>Station Norland</h3>
+        <p>M-State settlement on the second floor of the Megastructure. Consists of metal barracks and research labs.</p>
+    </div>
+
+    <div class="section-label">Significant Landmarks & Lore Sites</div>
+    <div class="description-text">
+        <h3>The Cinema</h3>
+        <p><strong>[Outdated - Rework in Progress]</strong> A grand three-story establishment run by the Protophytans. The hub is public, but the basement and upper floors require tickets. No weapons or vandalism allowed.</p>
+        <p><strong>Navigation:</strong> Coordinates: 412 X, 2919 Z | Distance: 5086 Studs</p>
+
+        <h3>Infinitelands Megastructure</h3>
+        <p>A deep-land structure with three floors and a central "death-pit." The surface floor is decorated with organized furniture, including comfy chairs and paintings.</p>
+        <p><strong>Navigation:</strong> Coordinates: 2032X, 7457 Z | Distance: 9901 Studs</p>
+
+        <h3>Neighborhood House</h3>
+        <p>A highly unstable house resembling Level-9 architecture that has noclipped into Level-0. Parts of the walls and windows act as noclip boundaries. An orange light glows from the second floor.</p>
+        <p><strong>Navigation:</strong> Coordinates: 7500 X, 980 Z | Distance: 9450 Studs</p>
+        
+        <h3>Sinkhole</h3>
+        <p>A giant downward hole in the western region. Previously linked to Level-49.</p>
+        <p><strong>Navigation:</strong> Coordinates: -389 X, 5634 Z | Distance: 7500 Studs</p>
+    </div>
+
+</div>
     </div>
 </div>
 

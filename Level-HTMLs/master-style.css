@@ -204,11 +204,11 @@ canvas {
 
 .information-box {
   width: 100%;
-  background: rgba(1, 8, 18, 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(1, 8, 18, 0.98);
   border: 2px solid #0099ff;
   padding: 40px;
   box-sizing: border-box;
+  contain: content; 
 }
 
 .information-box .section-label {
@@ -242,16 +242,11 @@ canvas {
 }
 
 .highlight {
-  background-color: rgba(0, 153, 255, 0.4);
+  background-color: #0099ff;
   color: #fff;
-  text-shadow: 0 0 8px #00d2ff;
-  
-  padding: 0;
-  margin: 0;
-  display: inline;
-  
-  box-shadow: 0 0 5px rgba(0, 153, 255, 0.5); 
-  border-radius: 0;
+  padding: 0 2px;
+  border-radius: 2px;
+  will-change: background-color; 
 }
 
 .data-box {
@@ -354,4 +349,9 @@ canvas {
   to {
     opacity: 1;
   }
+}
+
+html {
+  scroll-behavior: smooth;
+  content-visibility: auto; 
 }

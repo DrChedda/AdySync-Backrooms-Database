@@ -1,5 +1,3 @@
-const basePath = "{{ '' | relative_url }}".replace(/\/$/, "");
-
 const items = [
   { label: "Level 0", header: "Infinite Yellow Corridors", link: "Level-HTMLs/level-0.html", image: "Images/level_0.png" },
   { label: "Level 0.35", header: "The Forgotten", link: "Level-HTMLs/level-0.35.html", image: "Images/placeholder.png" },
@@ -89,21 +87,22 @@ for (let i = 0; i < total; i++) {
   const baseOffset = hasAsterisk ? 750 : 0;
 
   if (!isBlank) {
+    const fullImgPath = data.image ? `${basePath}/${data.image}` : '';
+    
     el.innerHTML = `
       <span>${displayLabel}</span>
       <div class="menu">
-        <img class="menu-image" src="${data.image || ''}" alt="">
+        <img class="menu-image" src="${fullImgPath}" alt="">
         <div class="menu-header">${data.header}</div>
       </div>
     `;
+
     el.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'A' && data.link) {
-        window.location.href = data.link;
+      if (e.target.tagName !== 'A' && data.link) {=
+        window.location.href = `${basePath}/${data.link}`;
       }
     });
-  } else {
-    el.classList.add('hidden-node');
-  }
+}
 
   ui.appendChild(el);
   nodes.push({

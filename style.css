@@ -173,8 +173,13 @@ canvas {
   pointer-events: none;
 }
 
-.node:hover .menu {
+.node.open .menu {
   display: flex;
+  pointer-events: auto;
+}
+
+.node.open {
+  z-index: 200;
 }
 
 .menu-image {

@@ -1,24 +1,42 @@
 import os
-from pathlib import Path
 
-def rename_existing_files(directory="."):
-    path = Path(directory)
-    count = 0
+def add_permalink_front_matter():
+    # Counter for modified files
+    files_processed = 0
 
-    # list() ensures we see all files before we start changing their names
-    for html_file in list(path.rglob("*.html")):
-        if "Level" in html_file.name:
-            # Create the new name string
-            new_name = html_file.name.replace("Level", "level")
-            new_path = html_file.with_name(new_name)
-
-            # Perform the actual rename on the file system
-            html_file.rename(new_path)
+    # Iterate through all files in the current directory
+    for filename in os.listdir('.'):
+        if filename.endswith('.html'):
+            # Get the name without the .html extension (e.g., 'level-37')
+            name_only = os.path.splitext(filename)[0]
             
-            print(f"Renamed: {html_file.name} -> {new_name}")
-            count += 1
+            # Construct the front matter block
+            front_matter = f"---\npermalink: /{name_only}\n---\n"
+            
+            try:
+                # Read the existing content
+                with open(filename, 'r', encoding='utf-8') as file:
+                    content = file.read()
+                
+                # Check if front matter already exists to avoid double-adding
+                if content.startswith('---'):
+                    print(f"Skipped: {filename} (Already has front matter)")
+                    continue
+                
+                # Combine front matter with original content
+                new_content = front_matter + content
+                
+                # Write the updated content back
+                with open(filename, 'w', encoding='utf-8') as file:
+                    file.write(new_content)
+                
+                print(f"Added permalink to: {filename}")
+                files_processed += 1
+                
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
 
-    print(f"\nDone. {count} files were renamed.")
+    print(f"\nTask completed. Total files updated: {files_processed}")
 
 if __name__ == "__main__":
-    rename_existing_files()
+    add_permalink_front_matter()

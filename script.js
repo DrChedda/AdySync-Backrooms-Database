@@ -34,6 +34,10 @@ for (let i = 0; i < total; i++) {
   let displayLabel = data.label;
   let anchorIndex = i;
 
+  if (displayLabel && displayLabel.trim().toLowerCase() === 'fun') {
+    el.classList.add('rainbow-node');
+  }
+
   if (match) {
     anchorIndex = parseInt(match[1]);
     displayLabel = match[2];
@@ -80,10 +84,6 @@ function corePos(worldY, centerX) {
     const d = drift(worldY);
     const mainAngle = worldY * 0.0035;
     return centerX + d + (majorR * Math.cos(mainAngle));
-}
-
-if (displayLabel && displayLabel.trim().toLowerCase() === 'fun') {
-  el.classList.add('rainbow-node');
 }
 
 function drawSegment(worldY, screenY, nextScreenY, centerX) {

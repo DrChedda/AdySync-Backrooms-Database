@@ -38,8 +38,7 @@
   { label: "", header: "space", link: "", image: "" },
   { label: "Level 588", header: "Obsession", link: "{{ '/main/level-588' | relative_url }}", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "12*Hub", header: "The Hub", link: "{{ '/main/hub' | relative_url }}", image: "Images/placeholder.png" },
-  { label: "Fun", header: "Fun", link: "{{ '/main/level-fun' | relative_url }}", image: "Images/placeholder.png" }
+  { label: "12*Hub", header: "The Hub", link: "{{ '/main/hub' | relative_url }}", image: "Images/placeholder.png" }
 ]
 
 const canvasEl = document.getElementById("canvas");

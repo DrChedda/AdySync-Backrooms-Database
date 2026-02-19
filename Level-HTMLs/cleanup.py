@@ -1,39 +1,51 @@
 import os
 import re
 
-def update_permalink_front_matter():
-    # Counter for modified files
+def fix_assets_and_links():
     files_processed = 0
 
-    # Iterate through all files in the current directory
+    # Dictionary of patterns to find and their replacements
+    # This handles the back button, css, favicon, scripts, and placeholder images
+    replacements = {
+        # Back Button
+        r'<a\s+href=["\']\.\./main/["\']\s+class=["\']nav-btn["\']>\s*←\s*BACK\s*</a>': 
+            '<a href="{{ \'/main\' | relative_url }}" class="nav-btn">← BACK</a>',
+        
+        # CSS Master Style
+        r'<link\s+rel=["\']stylesheet["\']\s+href=["\']master-style\.css["\'](?:\s*/)?>': 
+            '<link rel="stylesheet" href="{{ \'/master-style.css\' | relative_url }}">',
+        
+        # Favicon
+        r'<link\s+rel=["\']icon["\']\s+type=["\']image/png["\']\s+href=["\']\.\./favicon\.png["\'](?:\s*/)?>': 
+            '<link rel="icon" type="image/png" href="{{ \'/favicon.png\' | relative_url }}">',
+        
+        # Placeholder Images
+        r'<img\s+src=["\']\.\./Images/placeholder\.png["\']': 
+            '<img src="{{ \'/Images/placeholder.png\' | relative_url }}"',
+        
+        # Master Script
+        r'<script\s+src=["\']master-script\.js["\']></script>': 
+            '<script src="{{ \'/master-script.js\' | relative_url }}"></script>'
+    }
+
     for filename in os.listdir('.'):
         if filename.endswith('.html'):
-            name_only = os.path.splitext(filename)[0]
-            
-            # The new front matter block
-            new_front_matter = f"---\npermalink: /main/{name_only}/\n---\n"
-            
             try:
                 with open(filename, 'r', encoding='utf-8') as file:
                     content = file.read()
+
+                original_content = content
                 
-                # Regex logic: 
-                # If file starts with ---, it finds everything between the first and second ---
-                # and replaces it (including the dashes) with the new front matter.
-                if content.startswith('---'):
-                    # re.S allows '.' to match newlines
-                    # This replaces the entire existing front matter block
-                    new_content = re.sub(r'^---.*?---\n?', new_front_matter, content, flags=re.S)
-                    print(f"Updated existing front matter in: {filename}")
-                else:
-                    # If no front matter exists, just prepend it
-                    new_content = new_front_matter + content
-                    print(f"Added new front matter to: {filename}")
-                
-                with open(filename, 'w', encoding='utf-8') as file:
-                    file.write(new_content)
-                
-                files_processed += 1
+                # Apply each replacement defined in the dictionary
+                for pattern, replacement in replacements.items():
+                    content = re.sub(pattern, replacement, content)
+
+                # Only save if something actually changed
+                if content != original_content:
+                    with open(filename, 'w', encoding='utf-8') as file:
+                        file.write(content)
+                    print(f"Updated assets and back button in: {filename}")
+                    files_processed += 1
                 
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
@@ -41,4 +53,4 @@ def update_permalink_front_matter():
     print(f"\nTask completed. Total files updated: {files_processed}")
 
 if __name__ == "__main__":
-    update_permalink_front_matter()
+    fix_assets_and_links()

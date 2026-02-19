@@ -211,11 +211,15 @@ canvas {
 .tag.red { color: #ff3333; border-color: #ff3333; background: rgba(255, 51, 51, 0.15); }
 .tag.red-orange { color: #ff6633; border-color: #ff6633; background: rgba(255, 102, 51, 0.15); }
 .tag.orange { color: #ff6600; border-color: #ff6600; background: rgba(255, 102, 0, 0.15); }
+.tag.yellow-orange { color: #ff9900; border-color: #ff9900; background: rgba(255, 153, 0, 0.15); }
 .tag.yellow { color: #ffcc00; border-color: #ffcc00; background: rgba(255, 204, 0, 0.15); }
+.tag.yellow-green { color: #ccff00; border-color: #ccff00; background: rgba(204, 255, 0, 0.15); }
 .tag.green { color: #00ff66; border-color: #00ff66; background: rgba(0, 255, 102, 0.15); }
 .tag.dark-green { color: #009933; border-color: #009933; background: rgba(0, 153, 51, 0.15); }
 .tag.blue { color: #3399ff; border-color: #3399ff; background: rgba(51, 153, 255, 0.15); }
+.tag.dark-blue { color: #0066cc; border-color: #0066cc; background: rgba(0, 102, 204, 0.15); }
 .tag.purple { color: #cc66ff; border-color: #cc66ff; background: rgba(204, 102, 255, 0.15); }
+.tag.dark-purple { color: #9900cc; border-color: #9900cc; background: rgba(153, 0, 204, 0.15); }
 .tag.pink { color: #ff66cc; border-color: #ff66cc; background: rgba(255, 102, 204, 0.15); }
 
 .information-box {

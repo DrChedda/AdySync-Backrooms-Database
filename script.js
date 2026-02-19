@@ -1,4 +1,4 @@
-[
+const items = [
   { label: "Level 0", header: "Infinite Yellow Corridors", link: "{{ '/main/level-0' | relative_url }}", image: "Images/level_0.png" },
   { label: "Level 0.35", header: "The Forgotten", link: "{{ '/main/level-0.35' | relative_url }}", image: "Images/placeholder.png" },
   { label: "Level 0.5", header: "The Old Orange Halls", link: "{{ '/main/level-0.5' | relative_url }}", image: "Images/placeholder.png" },
@@ -38,8 +38,10 @@
   { label: "", header: "space", link: "", image: "" },
   { label: "Level 588", header: "Obsession", link: "{{ '/main/level-588' | relative_url }}", image: "Images/placeholder.png" },
   { label: "", header: "space", link: "", image: "" },
-  { label: "12*Hub", header: "The Hub", link: "{{ '/main/hub' | relative_url }}", image: "Images/placeholder.png" }
+  { label: "12*Hub", header: "The Hub", link: "{{ '/main/hub' | relative_url }}", image: "Images/placeholder.png" },
+  { label: "fun", header: "fun", link: "{{ '/main/fun' | relative_url }}", image: "Images/placeholder.png" }
 ]
+
 
 const canvasEl = document.getElementById("canvas");
 const ctx = canvasEl.getContext("2d");

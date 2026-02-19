@@ -113,21 +113,23 @@ canvas {
   opacity: 0;
 }
 
-.node.rainbow-node {
+.node.fun-node {
   background: rgba(1, 8, 18, 0.95);
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
-  box-shadow: 0 0 20px rgba(255,255,255,0.02);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 20px rgba(0, 100, 255, 0.1);
   border: 4px solid transparent;
-  border-image-source: linear-gradient(90deg, #ff0000 0%, #ff7f00 14%, #ffff00 28%, #00ff00 42%, #0000ff 56%, #4b0082 70%, #8b00ff 84%);
+  border-image-source: linear-gradient(90deg, #ff0000 0%, #0000ff 100%);
   border-image-slice: 1;
 }
-.node.rainbow-node .menu {
+
+.node.fun-node .menu {
   border-color: #fff;
 }
-.node.rainbow-node:hover {
+
+.node.fun-node:hover {
   transform: translate(-50%, -50%) scale(1.06) !important;
-  box-shadow: 0 0 30px rgba(255,255,255,0.04), 0 0 10px rgba(255,0,128,0.09) inset;
+  box-shadow: 0 0 30px rgba(0, 100, 255, 0.2), 0 0 10px rgba(255, 0, 0, 0.2) inset;
 }
 
 .node.active-search {

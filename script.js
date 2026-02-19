@@ -82,6 +82,10 @@ function corePos(worldY, centerX) {
     return centerX + d + (majorR * Math.cos(mainAngle));
 }
 
+if (displayLabel && displayLabel.trim().toLowerCase() === 'fun') {
+  el.classList.add('rainbow-node');
+}
+
 function drawSegment(worldY, screenY, nextScreenY, centerX) {
     const d1 = drift(worldY);
     const nextWorldY = nextScreenY + scrollPos;

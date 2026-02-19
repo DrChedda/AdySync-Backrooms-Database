@@ -57,9 +57,20 @@ for (let i = 0; i < total; i++) {
       </div>
     `;
     el.addEventListener('click', (e) => {
-      if (e.target.tagName !== 'A' && data.link) {
-        window.location.href = data.link;
+      if (e.target.tagName === 'A') return;
+      const wasOpen = el.classList.contains('open');
+      if (!wasOpen) {
+        nodes.forEach(n => {
+          if (n.element !== el) n.element.classList.remove('open');
+        });
+        el.classList.add('open');
+      } else {
+        el.classList.remove('open');
+        if (data.link) {
+          window.location.href = data.link;
+        }
       }
+      e.stopPropagation();
     });
   } else {
     el.classList.add('hidden-node');
@@ -74,7 +85,8 @@ for (let i = 0; i < total; i++) {
     visible: !isBlank,
     baseOffset: baseOffset,
     hasAsterisk: hasAsterisk,
-    vOffset: (anchorIndex === i) ? 0 : 50 
+    vOffset: (anchorIndex === i) ? 0 : 50,
+    connectors: (data.connector && typeof data.connector === 'string') ? data.connector.split('|').map(s => parseInt(s, 10)).filter(n => !isNaN(n)) : []
   });
 }
 

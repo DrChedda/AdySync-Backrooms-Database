@@ -1,46 +1,53 @@
 import os
 import re
 
-def add_trailing_slash_to_permalinks():
-    files_processed = 0
+def final_cleanup():
+    # 1. Matches Jekyll front matter
+    front_matter_pattern = re.compile(r'^---\s*\n.*?\n---\s*\n', re.DOTALL)
+    
+    # 2. Matches Liquid tags {{ 'path' | relative_url }}
+    liquid_pattern = re.compile(r"\{\{\s*['\"](?P<path>.*?)['\"]\s*\|\s*relative_url\s*\}\}")
+    
+    # 3. Matches <a href="main"
+    anchor_main_pattern = re.compile(r'<a\s+href=["\']main["\']')
 
-    # Pattern to find the permalink line within the front matter
-    # Group 1: 'permalink: '
-    # Group 2: The actual path
-    permalink_pattern = r'(permalink:\s*)([^\n]+)'
+    # 4. Matches src="Images/ and changes it to src="../Images/
+    image_path_pattern = re.compile(r'src=["\']Images/')
 
-    for filename in os.listdir('.'):
-        if filename.endswith('.html'):
-            try:
-                with open(filename, 'r', encoding='utf-8') as file:
-                    content = file.read()
+    html_files = [f for f in os.listdir('.') if f.endswith('.html')]
 
-                # We only care about files that actually have front matter
-                if content.startswith('---'):
-                    
-                    def slash_replacer(match):
-                        prefix = match.group(1)
-                        path = match.group(2).strip()
-                        
-                        # If it already ends with a slash, leave it alone
-                        if path.endswith('/'):
-                            return f"{prefix}{path}"
-                        # Otherwise, add the slash
-                        else:
-                            return f"{prefix}{path}/"
+    if not html_files:
+        print("No HTML files found.")
+        return
 
-                    new_content = re.sub(permalink_pattern, slash_replacer, content, count=1)
+    for filename in html_files:
+        with open(filename, 'r', encoding='utf-8') as f:
+            content = f.read()
 
-                    if new_content != content:
-                        with open(filename, 'w', encoding='utf-8') as file:
-                            file.write(new_content)
-                        print(f"Added trailing slash to permalink in: {filename}")
-                        files_processed += 1
-                
-            except Exception as e:
-                print(f"Error processing {filename}: {e}")
+        # Step 1: Remove Front Matter
+        content = front_matter_pattern.sub('', content)
 
-    print(f"\nTask completed. Total permalinks updated: {files_processed}")
+        # Step 2: Fix Liquid tags
+        def fix_liquid(match):
+            path = match.group('path')
+            path = path.replace('/main/', '')
+            if path.startswith('/'):
+                path = path[1:]
+            return path
+        content = liquid_pattern.sub(fix_liquid, content)
+
+        # Step 3: Replace back button link
+        content = anchor_main_pattern.sub('<a href="../index.html"', content)
+
+        # Step 4: Prepend ../ to Image sources
+        # This turns src="Images/ into src="../Images/
+        content = image_path_pattern.sub('src="../Images/', content)
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(content)
+        
+        print(f"Updated: {filename}")
 
 if __name__ == "__main__":
-    add_trailing_slash_to_permalinks()
+    final_cleanup()
+    print("\nDone! Front matter removed, and all paths (Links & Images) updated to use ../")

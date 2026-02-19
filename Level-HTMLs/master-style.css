@@ -1,6 +1,3 @@
----
-permalink: /main/master-style.css
----
 :root {
   --nav-height: 60px;
   --accent: #0099ff;
@@ -216,6 +213,7 @@ canvas {
 .tag.dark-green { color: #009933; border-color: #009933; background: rgba(0, 153, 51, 0.15); }
 .tag.blue { color: #3399ff; border-color: #3399ff; background: rgba(51, 153, 255, 0.15); }
 .tag.purple { color: #cc66ff; border-color: #cc66ff; background: rgba(204, 102, 255, 0.15); }
+.tag.dark-purple { color: #9900cc; border-color: #9900cc; background: rgba(153, 0, 204, 0.15); }
 .tag.pink { color: #ff66cc; border-color: #ff66cc; background: rgba(255, 102, 204, 0.15); }
 
 .information-box {

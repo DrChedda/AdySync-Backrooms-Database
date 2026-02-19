@@ -35,7 +35,7 @@ for (let i = 0; i < total; i++) {
   let anchorIndex = i;
 
   if (displayLabel && displayLabel.trim().toLowerCase() === 'fun') {
-    el.classList.add('rainbow-node');
+    el.classList.add('fun-node');
   }
 
   if (match) {

@@ -6,7 +6,7 @@ permalink: /main/level-fun
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 0 | Database</title>
+    <title>Level FUN | Database</title>
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
     <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">    
 </head>
@@ -26,57 +26,73 @@ permalink: /main/level-fun
       <img src="{{ '/Images/placeholder.png' | relative_url }}" alt="Level View">
     </div>
 
-   <div class="title-container">
-    <div class="title-group">
-        <h1 class="level-id">Level FUN</h1>
-        <h2 class="level-name">"FUN"</h2>
+    <div class="title-container">
+        <div class="title-group">
+            <h1 class="level-id">Level FUN</h1>
+            <h2 class="level-name">"FUN"</h2>
+        </div>
+        
+        <div class="tags-row">
+            <span class="tag dark-blue">Survivability: Nonsurvivable</span>
+            <span class="tag yellow">Generation: Static</span>
+            <span class="tag dark-purple">No Exit</span>
+        </div>
+
+        <div class="data-box">
+            <div class="data-item"><strong>HABITABILITY:</strong> 0%</div>
+            <div class="data-item"><strong>SIZE:</strong> Enormous</div>
+        </div>
+    </div>
+  </div>
+
+  <div class="information-box">
+    <div class="tabs-container">
+        <button class="tab-button active" data-tab="info-tab">Information</button>
+        <button class="tab-button" data-tab="layer-one-tab">Layer 1</button>
+        <button class="tab-button" data-tab="layer-two-tab">Layer 2</button>
+        <button class="tab-button" data-tab="layer-three-tab">Layer 3</button>
+        <button class="tab-button" data-tab="layer-four-tab">Layer 4</button>                
     </div>
     
-    <div class="tags-row">
-        <span class="tag dark-blue">Survivability: Nonsurvivable</span>
-        <span class="tag yellow">Generation: Static</span>
-        <span class="tag purple">No Exit</span>
+    <div class="tab-content active" id="info-tab">
+        <div class="section-label">Data Entry: Entrances</div>
+        <div class="description-text">
+            <ul>
+                <li>Entrance in <a href="{{ '/main/level-0' | relative_url }}">Level-0</a></li>
+            </ul>
+        </div>
+
+        <div class="section-label">Data Entry: Entities</div>
+        <div class="description-text">
+            <p>Scanning for lifeforms...</p>
+        </div>
     </div>
 
-    <div class="data-box">
-        <div class="data-item"><strong>HABITABILITY:</strong> 0%</div>
-        <div class="data-item"><strong>SIZE:</strong> Enormous</div>
+    <div class="tab-content" id="layer-one-tab">
+        <div class="section-label">Layer 1 Analysis</div>
+        <div class="description-text">
+            <p>Layer 1 tab content.</p>
+        </div>
     </div>
-</div>
-    </div>
-        <div class="information-box">
-            <div class="tabs-container">
-                <button class="tab-button active" data-tab="info-tab">Information</button>
-                <button class="tab-button" data-tab="layer-one-tab">Layer 1</button>
-                <button class="tab-button" data-tab="layer-two-tab">Layer 2</button>
-                <button class="tab-button" data-tab="layer-three-tab">Layer 3</button>
-                <button class="tab-button" data-tab="layer-four-tab">Layer 4</button>                
-            </div>
-            
-            <div class="tab-content active" id="info-tab">
-                  <div class="section-label">Data Entry: Entrances</div>
-            <div class="description-text">
-                <ul>
-                    <li>Entrance in <a href="level-0">Level-0</a></li>
-                </ul>
-            </div>
 
-            <div class="section-label">Data Entry: Entities</div>
-
-            </div>
-            <div class="tab-content" id="layer-one-tab">
-                <p>Layer 1 tab content.</p>
-            </div>
-            <div class="tab-content" id="layer-two-tab">
-                <p>Layer 2 tab content.</p>
-            </div>
-            <div class="tab-content" id="layer-three-tab">
-                <p>Layer 3 tab content.</p>
-            </div>
-            <div class="tab-content" id="layer-four-tab">
-                <p>Layer 4 tab content.</p>
-            </div>
+    <div class="tab-content" id="layer-two-tab">
+        <div class="description-text">
+            <p>Layer 2 tab content.</p>
+        </div>
     </div>
+
+    <div class="tab-content" id="layer-three-tab">
+        <div class="description-text">
+            <p>Layer 3 tab content.</p>
+        </div>
+    </div>
+
+    <div class="tab-content" id="layer-four-tab">
+        <div class="description-text">
+            <p>Layer 4 tab content.</p>
+        </div>
+    </div>
+  </div>
 </div>
 
 <script src="{{ '/main/master-script.js' | relative_url }}"></script>

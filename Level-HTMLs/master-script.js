@@ -58,6 +58,23 @@ function searchText() {
     }
 }
 
+(function(){
+    document.querySelectorAll('.tab-side-wrap').forEach(function(wrap){
+        var tabs = wrap.querySelectorAll('.side-tab');
+        var panels = wrap.querySelectorAll('.side-panel');
+        tabs.forEach(function(tab){
+            tab.addEventListener('click', function(){
+                tabs.forEach(function(t){ t.classList.remove('active'); });
+                panels.forEach(function(p){ p.classList.remove('active'); });
+                tab.classList.add('active');
+                var target = tab.getAttribute('data-target');
+                var panel = wrap.querySelector('#' + target);
+                if(panel) panel.classList.add('active');
+            });
+        });
+    });
+})();
+
 document.getElementById('search-box').addEventListener('input', () => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(searchText, 300); 

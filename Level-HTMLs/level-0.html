@@ -99,28 +99,6 @@ permalink: /main/level-0/
         </div>
 
         <div class="tab-content" id="Landmarks-tab">
-            <div class="tab-side-wrap">
-                <div class="side-tabs">
-                    <button class="side-tab active" data-target="land-chasm">
-                        <img src="{{ '/Images/Level_0_Map.png' | relative_url }}" alt="Chasm thumbnail">
-                    </button>
-                    <button class="side-tab" data-target="land-infinitelands">
-                        <img src="{{ '/Images/Level_0.png' | relative_url }}" alt="Infinitelands thumbnail">
-                    </button>
-                </div>
-
-                <div class="side-content">
-                    <div class="side-panel active" id="land-chasm">
-                        <div class="section-label">The Chasm (preview)</div>
-                        <img src="{{ '/Images/Level_0_Map.png' | relative_url }}" alt="Chasm" class="side-image">
-                    </div>
-
-                    <div class="side-panel" id="land-infinitelands">
-                        <div class="section-label">Infinitelands (preview)</div>
-                        <img src="{{ '/Images/Level_0.png' | relative_url }}" alt="Infinitelands" class="side-image">
-                    </div>
-                </div>
-            </div>
 
     <div class="section-label">Access Points: Level Entrances</div>
     <div class="description-text">
@@ -185,25 +163,6 @@ permalink: /main/level-0/
 </div>
 
 <script src="{{ '/main/master-script.js' | relative_url }}"></script>
-
-<script>
-    (function(){
-        document.querySelectorAll('.tab-side-wrap').forEach(function(wrap){
-            var tabs = wrap.querySelectorAll('.side-tab');
-            var panels = wrap.querySelectorAll('.side-panel');
-            tabs.forEach(function(tab){
-                tab.addEventListener('click', function(){
-                    tabs.forEach(function(t){ t.classList.remove('active'); });
-                    panels.forEach(function(p){ p.classList.remove('active'); });
-                    tab.classList.add('active');
-                    var target = tab.getAttribute('data-target');
-                    var panel = wrap.querySelector('#' + target);
-                    if(panel) panel.classList.add('active');
-                });
-            });
-        });
-    })();
-</script>
 
 </body>
 </html>

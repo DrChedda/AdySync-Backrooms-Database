@@ -49,15 +49,27 @@
         </div>
         
         <div class="tab-content active" id="info-tab">
-            <div class="section-label">Data Entry: Survival Guide</div>
-            <div class="description-text">
-                <ul>
-                    <li>Travel in groups of two or more.</li>
-                    <li>Seek shelter at the M.E.G Embassy.</li>
-                    <li>Gather extra supplies before going out.</li>
-                    <li>Keep extra awareness; listen for sounds, look for movement.</li>
-                    <li>Identify the nearest crawlspace, dark area or cover-spot.</li>
-                </ul>
+            <div class="tab-side-wrap">
+                <div class="side-tabs">
+                    <button class="side-tab active" data-target="info-map">
+                        <img src="Images/Level_0_Map.png" alt="Map thumbnail">
+                    </button>
+                    <button class="side-tab" data-target="info-photo">
+                        <img src="Images/Level_0.png" alt="Photo thumbnail">
+                    </button>
+                </div>
+
+                <div class="side-content">
+                    <div class="side-panel active" id="info-map">
+                        <div class="section-label">Data Entry: Map</div>
+                        <img src="Images/Level_0_Map.png'" alt="Level 0 Map" class="side-image">
+                    </div>
+
+                    <div class="side-panel" id="info-photo">
+                        <div class="section-label">Area Photo</div>
+                        <img src="Images/Level_0.pngds" alt="Level 0" class="side-image">
+                    </div>
+                </div>
             </div>
 
             <div class="section-label">Random Generation & Anomalies</div>

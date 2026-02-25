@@ -14,6 +14,7 @@ let isSignUp = false;
 
 // 2. PUBLIC VIEW LOGIC (Level Data Loading)
 async function loadLevelData() {
+    // Only run if we are on a level page (identified by the display-id element)
     if (!document.getElementById('display-id')) return;
 
     const { data: level, error } = await supabase
@@ -37,14 +38,23 @@ function renderPage(level, content) {
     document.getElementById('page-title').innerText = `${level.display_title} | Database`;
     document.getElementById('display-id').innerText = level.display_title;
     document.getElementById('display-name').innerText = `"${level.subtitle}"`;
-    // Update path if necessary to match your GitHub repo structure
-    document.getElementById('level-image').src = `https://raw.githubusercontent.com/User/Repo/main/${level.thumbnail_path}`;
     
-    document.getElementById('stat-habitability').innerText = level.habitability;
-    document.getElementById('stat-size').innerText = level.size_description;
+    // Dynamic image path handling
+    const imgElement = document.getElementById('level-image');
+    if (imgElement) {
+        imgElement.src = level.thumbnail_path.startsWith('http') 
+            ? level.thumbnail_path 
+            : `https://raw.githubusercontent.com/User/Repo/main/${level.thumbnail_path}`;
+    }
+    
+    // Stats update
+    if(document.getElementById('stat-habitability')) document.getElementById('stat-habitability').innerText = level.habitability;
+    if(document.getElementById('stat-size')) document.getElementById('stat-size').innerText = level.size_description;
 
     const infoTab = document.getElementById('info-tab');
     const landmarkTab = document.getElementById('Landmarks-tab');
+    
+    if (infoTab) infoTab.innerHTML = ''; // Clear placeholders
     
     content.forEach(item => {
         const html = `
@@ -54,8 +64,8 @@ function renderPage(level, content) {
                 ${item.coordinates ? `<p><strong>Navigation:</strong> ${item.coordinates} | ${item.distance}</p>` : ''}
             </div>
         `;
-        if (item.tab_type === 'info-tab') infoTab.innerHTML += html;
-        else landmarkTab.innerHTML += html;
+        if (item.tab_type === 'info-tab' && infoTab) infoTab.innerHTML += html;
+        else if (landmarkTab) landmarkTab.innerHTML += html;
     });
 }
 
@@ -91,7 +101,7 @@ async function handleAuth() {
             options: { data: { username: username } }
         });
         if (error) alert(error.message);
-        else alert("Signup successful! You can now login.");
+        else alert("Signup successful! Check email or login.");
     } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) alert(error.message);
@@ -108,7 +118,7 @@ async function checkUserSession() {
         authBox?.classList.add('hidden');
         editorUi.classList.remove('hidden');
         document.getElementById('user-display').innerText = user.user_metadata.username || user.email;
-        fetchLevelList(); // Refresh sidebar list
+        fetchLevelList();
     }
 }
 
@@ -119,7 +129,7 @@ async function fetchLevelList() {
 
     const { data } = await supabase.from('levels').select('display_title, level_id_slug');
     if (data) {
-        container.innerHTML = data.map(l => 
+        container.innerHTML = `<div class="section-label">Existing Entries:</div>` + data.map(l => 
             `<span class="lvl-item" onclick="loadLevelIntoEditor('${l.level_id_slug}')">${l.display_title}</span>`
         ).join('');
     }
@@ -130,25 +140,19 @@ function addContentEntry(data = {}) {
     const entryId = Date.now() + Math.random();
     
     const entryHtml = `
-        <div class="content-entry-card" id="entry-${entryId}">
-            <div class="entry-header">
-                <div style="display:flex; gap:10px;">
-                    <select class="entry-category">
-                        <option value="Landmark" ${data.category === 'Landmark' ? 'selected' : ''}>Landmark</option>
-                        <option value="Entrance" ${data.category === 'Entrance' ? 'selected' : ''}>Entrance</option>
-                    </select>
-                    <select class="entry-tab">
-                        <option value="info-tab" ${data.tab_type === 'info-tab' ? 'selected' : ''}>Info Tab</option>
-                        <option value="Landmarks-tab" ${data.tab_type === 'Landmarks-tab' ? 'selected' : ''}>Landmarks Tab</option>
-                    </select>
-                </div>
-                <button class="nav-btn" style="background:#ff3333;" onclick="this.closest('.content-entry-card').remove()">DELETE</button>
+        <div class="content-entry-card" id="entry-${entryId}" style="border: 1px solid #222; padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.02);">
+            <div class="entry-header" style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+                <select class="entry-tab" onchange="if(typeof runPreview === 'function') runPreview()">
+                    <option value="info-tab" ${data.tab_type === 'info-tab' ? 'selected' : ''}>Information Tab</option>
+                    <option value="Landmarks-tab" ${data.tab_type === 'Landmarks-tab' ? 'selected' : ''}>Landmarks Tab</option>
+                </select>
+                <button class="nav-btn" style="background:#ff3333; padding: 2px 10px;" onclick="this.closest('.content-entry-card').remove(); if(typeof runPreview === 'function') runPreview();">REMOVE</button>
             </div>
-            <input type="text" class="entry-title" placeholder="Node Title" value="${data.title || ''}">
-            <textarea class="entry-desc" placeholder="Description...">${data.description || ''}</textarea>
-            <div class="form-grid">
-                <input type="text" class="entry-coords" placeholder="Coords" value="${data.coordinates || ''}">
-                <input type="text" class="entry-dist" placeholder="Distance" value="${data.distance || ''}">
+            <input type="text" class="entry-title" placeholder="Node Title" value="${data.title || ''}" oninput="if(typeof runPreview === 'function') runPreview()">
+            <textarea class="entry-desc" placeholder="Description content..." oninput="if(typeof runPreview === 'function') runPreview()">${data.description || ''}</textarea>
+            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <input type="text" class="entry-coords" placeholder="Coordinates (Optional)" value="${data.coordinates || ''}">
+                <input type="text" class="entry-dist" placeholder="Distance (Optional)" value="${data.distance || ''}">
             </div>
         </div>
     `;
@@ -157,7 +161,7 @@ function addContentEntry(data = {}) {
 
 async function saveFullLevel() {
     const saveBtn = document.getElementById('save-btn');
-    saveBtn.innerText = "UPLOADING...";
+    saveBtn.innerText = "SYNCHRONIZING...";
     saveBtn.disabled = true;
 
     const levelData = {
@@ -176,12 +180,11 @@ async function saveFullLevel() {
     const { data: newLvl, error: lvlErr } = await supabase.from('levels').upsert(levelData).select().single();
 
     if (lvlErr) {
-        alert("Error: " + lvlErr.message);
+        alert("Upload Error: " + lvlErr.message);
     } else {
         const entryCards = document.querySelectorAll('.content-entry-card');
         const entries = Array.from(entryCards).map((card, index) => ({
             level_id: newLvl.id,
-            category: card.querySelector('.entry-category').value,
             tab_type: card.querySelector('.entry-tab').value,
             title: card.querySelector('.entry-title').value,
             description: card.querySelector('.entry-desc').value,
@@ -190,11 +193,11 @@ async function saveFullLevel() {
             sort_order: index
         }));
 
-        await supabase.from('level_content').delete().eq('level_id', newLvl.id); // Clear old content
+        await supabase.from('level_content').delete().eq('level_id', newLvl.id);
         const { error: contentErr } = await supabase.from('level_content').insert(entries);
         
-        if (contentErr) alert("Content Error: " + contentErr.message);
-        else alert("Database Updated Successfully.");
+        if (contentErr) alert("Content Save Error: " + contentErr.message);
+        else alert("Database Update Complete.");
     }
 
     saveBtn.innerText = "UPLOAD TO DATABASE";
@@ -210,16 +213,19 @@ async function loadLevelIntoEditor(slug) {
     document.getElementById('lvl-title').value = level.display_title;
     document.getElementById('lvl-subtitle').value = level.subtitle;
     document.getElementById('lvl-thumb').value = level.thumbnail_path;
-    document.getElementById('lvl-color').value = level.theme_color;
+    document.getElementById('lvl-color').value = level.theme_color || "#0099ff";
     document.getElementById('lvl-habit').value = level.habitability;
     document.getElementById('lvl-size').value = level.size_description;
     document.getElementById('lvl-survive').value = level.survivability;
     document.getElementById('lvl-gen').value = level.generation;
     document.getElementById('lvl-mold').value = level.mold_presence;
 
-    const { data: content } = await supabase.from('level_content').select('*').eq('level_id', level.id);
+    const { data: content } = await supabase.from('level_content').select('*').eq('level_id', level.id).order('sort_order', { ascending: true });
     document.getElementById('content-entries-container').innerHTML = '';
     content?.forEach(c => addContentEntry(c));
+    
+    // Trigger preview if the function exists in the HTML
+    if (typeof runPreview === 'function') runPreview();
 }
 
 // 5. UTILITY & TAB LOGIC
@@ -285,6 +291,7 @@ document.getElementById('search-box')?.addEventListener('input', () => {
     searchTimeout = setTimeout(searchText, 300); 
 });
 
+// Side-tab Logic
 (function(){
     document.querySelectorAll('.tab-side-wrap').forEach(function(wrap){
         var tabs = wrap.querySelectorAll('.side-tab');

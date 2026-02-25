@@ -5,12 +5,11 @@ permalink: /main/editor
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Database Editor | Protected</title>
-    <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
+    <title>Database Editor</title>
+    <link rel="stylesheet" href="{{ '/main/editor/copy-master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-/* TOP BAR & LAYOUT */
-      .editor-top-bar {
+.editor-top-bar {
         position: fixed;
         top: 0;
         left: 0;
@@ -27,9 +26,7 @@ permalink: /main/editor
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       }
 
-      body {
-        padding-top: 120px;
-      }
+      body { padding-top: 120px; }
 
       #login-overlay {
         position: fixed;
@@ -54,23 +51,10 @@ permalink: /main/editor
         box-shadow: 0 0 20px var(--accent-glow);
       }
 
-      #signup-extra {
-        display: none;
-        flex-direction: column;
-        gap: 10px;
-      }
+      #signup-extra { display: none; flex-direction: column; gap: 10px; }
+      .btn-row { display: flex; gap: 10px; width: 100%; justify-content: center; }
 
-      .btn-row {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        justify-content: center;
-      }
-
-      input[type="email"],
-      input[type="password"],
-      input[type="text"],
-      select#tag-color-select {
+      input[type="email"], input[type="password"], input[type="text"], select#tag-color-select {
         padding: 12px;
         background: rgba(0, 21, 41, 0.8);
         border: 1px solid var(--accent);
@@ -80,20 +64,13 @@ permalink: /main/editor
         box-shadow: inset 0 0 5px var(--accent-glow);
       }
 
-      .editor-top-bar input[type="text"] {
-        padding: 5px;
-        width: 130px;
-      }
-
-      input:focus {
-        outline: 2px solid #ffeb3b;
-      }
+      .editor-top-bar input[type="text"] { padding: 5px; width: 130px; }
+      input:focus { outline: 2px solid #ffeb3b; }
 
       [contenteditable="true"] {
         border: 1px dashed rgba(0, 153, 255, 0.5);
         transition: border 0.3s;
       }
-
       [contenteditable="true"]:focus {
         border: 1px solid #ffeb3b;
         outline: none;
@@ -111,9 +88,7 @@ permalink: /main/editor
         letter-spacing: 1px;
         transition: transform 0.1s;
       }
-
       .auth-btn:active { transform: scale(0.95); }
-
       .blue-btn { background: var(--accent); color: white; }
       .save-btn { background: #4CAF50; color: white; }
 
@@ -128,51 +103,7 @@ permalink: /main/editor
         font-family: monospace;
       }
 
-      .back-btn:hover { background: rgba(255, 235, 59, 0.1); }
-
-      .tag-tool-box {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 5px 10px;
-        border: 1px solid #444;
-      }
-
-      .tags-row {
-        min-height: 30px;
-        padding: 10px 0;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .tag {
-        padding: 4px 12px;
-        border: 1px solid;
-        font-family: 'Consolas', monospace;
-        font-size: 12px;
-        text-transform: uppercase;
-        font-weight: bold;
-        display: inline-block;
-      }
-
-      .tag.dark-red { color: #cc0000; border-color: #cc0000; background: rgba(204, 0, 0, 0.15); }
-      .tag.red { color: #ff3333; border-color: #ff3333; background: rgba(255, 51, 51, 0.15); }
-      .tag.red-orange { color: #ff6633; border-color: #ff6633; background: rgba(255, 102, 51, 0.15); }
-      .tag.orange { color: #ff6600; border-color: #ff6600; background: rgba(255, 102, 0, 0.15); }
-      .tag.yellow-orange { color: #ff9900; border-color: #ff9900; background: rgba(255, 153, 0, 0.15); }
-      .tag.yellow { color: #ffcc00; border-color: #ffcc00; background: rgba(255, 204, 0, 0.15); }
-      .tag.green-yellow { color: #ccff00; border-color: #ccff00; background: rgba(204, 255, 0, 0.15); }
-      .tag.green { color: #00ff66; border-color: #00ff66; background: rgba(0, 255, 102, 0.15); }
-      .tag.dark-green { color: #009933; border-color: #009933; background: rgba(0, 153, 51, 0.15); }
-      .tag.blue { color: #3399ff; border-color: #3399ff; background: rgba(51, 153, 255, 0.15); }
-      .tag.dark-blue { color: #0066cc; border-color: #0066cc; background: rgba(0, 102, 204, 0.15); }
-      .tag.purple { color: #cc66ff; border-color: #cc66ff; background: rgba(204, 102, 255, 0.15); }
-      .tag.dark-purple { color: #9900cc; border-color: #9900cc; background: rgba(153, 0, 204, 0.15); }
-      .tag.pink { color: #ff66cc; border-color: #ff66cc; background: rgba(255, 102, 204, 0.15); }
-
-      .id-switcher {
+      .tag-tool-box, .id-switcher {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -180,18 +111,9 @@ permalink: /main/editor
         padding: 5px 10px;
         border: 1px solid #444;
       }
-
-      .id-label {
-        color: #ffeb3b;
-        font-size: 11px;
-        font-weight: 900;
-        font-family: monospace;
-      }
+      .id-label { color: #ffeb3b; font-size: 11px; font-weight: 900; font-family: monospace; }
 
       .tab-controls { display: flex; align-items: stretch; flex: 1; }
-      .tab-button { user-select: none; }
-      .tab-button[contenteditable="true"] { cursor: text; }
-
       .del-tab {
         background: #cc0000;
         color: white;
@@ -200,6 +122,8 @@ permalink: /main/editor
         padding: 0 10px;
         font-weight: bold;
       }
+
+      .tags-row { min-height: 40px; padding: 10px 0; }
     </style>
   </head>
   <body class="article-page">

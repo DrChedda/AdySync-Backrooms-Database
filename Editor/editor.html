@@ -1,9 +1,7 @@
---- 
-permalink: /main/editor 
----
+--- permalink: /main/editor ---
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Database Editor</title>
@@ -11,81 +9,71 @@ permalink: /main/editor
     <link rel="stylesheet" href="{{ '/main/editor/editor-style.css' | relative_url }}">
     <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body class="article-page">
-
+  </head>
+  <body class="article-page">
     <div id="login-overlay">
-        <div class="auth-card">
-            <h2 id="auth-title" style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
-            <div style="display: flex; flex-direction: column; gap: 15px;">
-                <input type="email" id="email-field" class="editor-input" placeholder="EMAIL">
-                <input type="password" id="password-field" class="editor-input" placeholder="PASSWORD">
-                <div id="signup-extra" style="display:none">
-                    <input type="text" id="key-field" class="editor-input" placeholder="CREATION_KEY">
-                </div>
-                <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
-                <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
-                <button class="btn-sleek" id="back-to-login" style="display:none; background: #333; color: #fff;" onclick="window.resetAuthUI()">Back</button>
-                <p id="auth-status" style="font-size: 10px; color: var(--edit-gold); font-family: monospace;"></p>
-            </div>
+      <div class="auth-card">
+        <h2 id="auth-title" style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <input type="email" id="email-field" class="editor-input" placeholder="EMAIL">
+          <input type="password" id="password-field" class="editor-input" placeholder="PASSWORD">
+          <div id="signup-extra" style="display:none">
+            <input type="text" id="key-field" class="editor-input" placeholder="CREATION_KEY">
+          </div>
+          <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
+          <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
+          <button class="btn-sleek" id="back-to-login" style="display:none; background: #333; color: #fff;" onclick="window.resetAuthUI()">Back</button>
+          <p id="auth-status" style="font-size: 10px; color: var(--edit-gold); font-family: monospace;"></p>
         </div>
+      </div>
     </div>
-
     <div class="editor-top-bar" id="editor-ui">
-        <div class="input-group">
-            <span style="font-family: monospace; font-size: 11px; color: var(--edit-gold);">ID_TARGET:</span>
-            <input type="text" id="id-input" class="editor-input" style="width: 100px;">
-            <button class="btn-sleek" onclick="window.switchPage()">LOAD</button>
-        </div>
-
-        <div class="img-input-container">
-            <span style="font-family: monospace; font-size: 11px; color: var(--accent);">IMG_SRC:</span>
-            <input type="text" id="img-input" class="editor-input" oninput="window.updatePreview(this.value)">
-        </div>
-
-        <div class="editor-actions">
-            <button class="btn-sleek save" onclick="window.saveToSupabase()">PUSH TO DATABASE</button>
-            <button class="btn-sleek" style="background: #222; color: #fff;" onclick="window.handleLogout()">LOGOUT</button>
-        </div>
+      <div class="input-group">
+        <span style="font-family: monospace; font-size: 11px; color: var(--edit-gold);">ID_TARGET:</span>
+        <input type="text" id="id-input" class="editor-input" style="width: 100px;">
+        <button class="btn-sleek" onclick="window.switchPage()">LOAD</button>
+      </div>
+      <div class="img-input-container">
+        <span style="font-family: monospace; font-size: 11px; color: var(--accent);">IMG_SRC:</span>
+        <input type="text" id="img-input" class="editor-input" oninput="window.updatePreview(this.value)">
+      </div>
+      <div class="editor-actions">
+        <button class="btn-sleek save" onclick="window.saveToSupabase()">PUSH TO DATABASE</button>
+        <button class="btn-sleek" style="background: #222; color: #fff;" onclick="window.handleLogout()">LOGOUT</button>
+      </div>
     </div>
-
     <div class="page-wrapper">
-        <div class="level-header-area">
-            <div class="image-box">
-                <img id="active-image" src="" alt="Live Preview">
-            </div>
-            <div style="flex: 1;">
-                <div class="title-group">
-                    <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
-                    <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
-                </div>
-                
-                <div class="hover-zone" style="margin-top: 20px;">
-                    <div class="floating-tools">
-                        <input type="text" id="new-tag-text" class="editor-input" placeholder="Tag Label">
-                        <select id="tag-color-select" class="editor-input">
-                            <option value="orange">Orange</option>
-                            <option value="blue">Blue</option>
-                            <option value="red">Red</option>
-                        </select>
-                        <button class="btn-sleek" onclick="window.addTag()">+ Add</button>
-                    </div>
-                    <div id="edit-tags" contenteditable="true" class="tags-row" style="min-height: 40px; outline: none;">
-                        </div>
-                </div>
-
-                <div id="edit-stats" contenteditable="true" class="data-box" style="margin-top: 20px;">
-                    </div>
-            </div>
+      <div class="level-header-area">
+        <div class="image-box">
+          <img id="active-image" src="" alt="Live Preview">
         </div>
-
-        <div class="information-box hover-zone" style="margin-top: 40px;">
+        <div style="flex: 1;">
+          <div class="title-group">
+            <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
+            <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
+          </div>
+          <div class="hover-zone" style="margin-top: 20px;">
             <div class="floating-tools">
-                <button class="btn-sleek blue" onclick="window.createNewTab()">Add Content Tab</button>
+              <input type="text" id="new-tag-text" class="editor-input" placeholder="Tag Label">
+              <select id="tag-color-select" class="editor-input">
+                <option value="orange">Orange</option>
+                <option value="blue">Blue</option>
+                <option value="red">Red</option>
+              </select>
+              <button class="btn-sleek" onclick="window.addTag()">+ Add</button>
             </div>
-            <div id="tab-headers" class="tabs-container"></div>
-            <div id="tab-contents-container"></div>
+            <div id="edit-tags" contenteditable="true" class="tags-row" style="min-height: 40px; outline: none;"></div>
+          </div>
+          <div id="edit-stats" contenteditable="true" class="data-box" style="margin-top: 20px;"></div>
         </div>
+      </div>
+      <div class="information-box hover-zone" style="margin-top: 40px;">
+        <div class="floating-tools">
+          <button class="btn-sleek blue" onclick="window.createNewTab()">Add Content Tab</button>
+        </div>
+        <div id="tab-headers" class="tabs-container"></div>
+        <div id="tab-contents-container"></div>
+      </div>
     </div>
     <script src="{{ '/main/editor/editor-script.js' | relative_url }}"></script>
   </body>

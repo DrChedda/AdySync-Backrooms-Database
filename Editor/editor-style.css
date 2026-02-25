@@ -1,0 +1,195 @@
+--- 
+permalink: /main/editor/editor-style.css
+---
+:root {
+	--edit-gold: #ffeb3b;
+	--edit-gold-glow: rgba(255, 235, 59, 0.3);
+	--panel-bg: rgba(1, 10, 20, 0.98);
+	--top-bar-height: 70px;
+}
+
+body.editor-active {
+	padding-top: var(--top-bar-height) !important;
+	user-select: auto;
+}
+
+.editor-top-bar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: var(--top-bar-height);
+	background: var(--panel-bg);
+	border-bottom: 2px solid var(--edit-gold);
+	z-index: 10001;
+	display: flex;
+	align-items: center;
+	padding: 0 20px;
+	gap: 20px;
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+	backdrop-filter: blur(10px);
+	box-sizing: border-box;
+}
+
+.editor-top-bar .input-group {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.img-input-container {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	border-left: 1px solid #333;
+	padding-left: 20px;
+	flex-grow: 1;
+	min-width: 0;
+}
+
+#img-input {
+	width: 100%;
+	max-width: 400px;
+	min-width: 100px;
+}
+
+.editor-actions {
+	margin-left: auto;
+	display: flex;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.hover-zone {
+	position: relative;
+	transition: all 0.3s ease;
+	border-radius: 4px;
+	outline: 2px solid transparent;
+	outline-offset: 4px;
+}
+
+.hover-zone:focus-within {
+	outline: 2px dashed var(--edit-gold);
+	background: rgba(255, 235, 59, 0.02);
+}
+
+.floating-tools {
+	position: absolute;
+	bottom: 100%;
+	right: 0;
+	margin-bottom: 10px;
+	display: flex;
+	gap: 10px;
+	background: #111;
+	border: 1px solid var(--edit-gold);
+	padding: 8px;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateY(10px);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+	z-index: 100;
+}
+
+.hover-zone:focus-within>.floating-tools {
+	opacity: 1;
+	pointer-events: auto;
+	transform: translateY(0);
+}
+
+.editor-input {
+	background: #000;
+	border: 1px solid var(--accent);
+	color: var(--accent);
+	padding: 6px 12px;
+	font-family: monospace;
+	font-size: 13px;
+	transition: border 0.3s;
+}
+
+.editor-input:focus {
+	border-color: var(--edit-gold);
+	outline: none;
+}
+
+.btn-sleek {
+	background: var(--edit-gold);
+	color: #000;
+	border: none;
+	padding: 6px 15px;
+	font-weight: 800;
+	text-transform: uppercase;
+	font-size: 11px;
+	cursor: pointer;
+	letter-spacing: 1px;
+	white-space: nowrap;
+}
+
+.btn-sleek.blue {
+	background: var(--accent);
+	color: #fff;
+}
+
+.btn-sleek.save {
+	background: #00ff66;
+	color: #000;
+}
+
+.tags-row .tag {
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.tags-row .tag:hover {
+	filter: brightness(1.1);
+	background: rgba(255, 51, 51, 0.2) !important;
+	border-color: #ff3333 !important;
+	color: #ff3333 !important;
+}
+
+.tags-row .tag:hover::after {
+	content: ' ✕';
+	font-size: 10px;
+	vertical-align: middle;
+}
+
+.tab-controls {
+	display: flex;
+	background: rgba(255, 255, 255, 0.05);
+	align-items: center;
+}
+
+.del-tab {
+	background: transparent;
+	color: #ff3333;
+	border: none;
+	padding: 0 10px;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+.del-tab:hover {
+	background: #ff3333;
+	color: white;
+}
+
+#login-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 20000;
+	background: #000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.auth-card {
+	width: 350px;
+	padding: 40px;
+	background: rgba(1, 8, 18, 0.9);
+	border: 1px solid var(--accent);
+	text-align: center;
+	box-shadow: 0 0 40px var(--accent-glow);
+}

@@ -10,43 +10,52 @@ permalink: /main/editor
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
-        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; }
-        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; transition: all 0.3s ease; }
+        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; flex-wrap: wrap; }
+        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 200px; transition: all 0.3s ease; font-family: monospace; }
+        input:focus { border-color: #ffeb3b; outline: none; }
         .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; min-width: 120px; }
         .secondary-btn { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; margin-top: 5px; }
         [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
         .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; }
         .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; }
-        body { padding-top: 80px; }
+        body { padding-top: 100px; }
         
-        /* Key field styling */
         #signup-extra { display: none; flex-direction: column; gap: 10px; }
         #key-field { border-color: #0099ff; }
+        
+        .id-switcher { display: flex; align-items: center; gap: 5px; background: #000; padding: 5px; border: 1px solid #333; }
+        .id-label { color: #ffeb3b; font-size: 10px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body class="article-page">
 
     <div id="login-overlay">
         <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
-        
         <input type="email" id="email-field" placeholder="Email">
         <input type="password" id="password-field" placeholder="Password">
-        
         <div id="signup-extra">
             <input type="text" id="key-field" placeholder="Creation Key (Required)">
         </div>
-        
         <div style="display: flex; gap: 10px;">
             <button class="auth-btn" id="login-btn" onclick="window.handleAuth('login')">SIGN IN</button>
             <button class="auth-btn" id="signup-btn" style="background: #0099ff; color: white;" onclick="window.toggleSignup()">REGISTER</button>
         </div>
-        
         <p id="auth-status" style="color: #ffeb3b; font-size: 13px; text-align: center; max-width: 300px;"></p>
         <button id="back-to-login" class="secondary-btn" style="display:none;" onclick="location.reload()">← Back to Login</button>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
-        <div style="color: #ffeb3b; font-family: monospace;">ID: <span id="target-id"></span></div>
+        <div class="id-switcher">
+            <span class="id-label">TARGET ID</span>
+            <input type="text" id="id-input" placeholder="level-0" style="width: 120px;">
+            <button class="auth-btn" style="min-width: 60px; padding: 10px;" onclick="window.switchPage()">LOAD</button>
+        </div>
+
+        <div class="id-switcher" style="border-color: #0099ff;">
+            <span class="id-label" style="color: #0099ff;">IMAGE FILE</span>
+            <input type="text" id="img-input" placeholder="level-0.png" oninput="window.updatePreview(this.value)">
+        </div>
+
         <button class="auth-btn" style="background: #0099ff; color: white;" onclick="window.createNewTab()">+ NEW TAB</button>
         <button class="auth-btn" style="background: #4CAF50; color: white;" onclick="window.saveToSupabase()">PUSH CHANGES</button>
         <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
@@ -77,15 +86,31 @@ permalink: /main/editor
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const urlParams = new URLSearchParams(window.location.search);
-        const PAGE_ID = urlParams.get('id') || 'level-0';
+        let CURRENT_ID = urlParams.get('id') || 'level-0';
 
-        // 2. UI Toggles
+        // 2. Navigation & Preview Logic
+        window.switchPage = function() {
+            const newId = document.getElementById('id-input').value.trim();
+            if (newId) {
+                CURRENT_ID = newId;
+                // Update URL without reloading for a smooth feel
+                const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + CURRENT_ID;
+                window.history.pushState({path:newurl},'',newurl);
+                window.loadData();
+            }
+        };
+
+        window.updatePreview = function(val) {
+            // Automatically assumes files are in /Images/ folder
+            document.getElementById('active-image').src = val.startsWith('http') ? val : `/Images/${val}`;
+        };
+
+        // 3. Auth Logic
         window.toggleSignup = function() {
             const extra = document.getElementById('signup-extra');
             const loginBtn = document.getElementById('login-btn');
             const signupBtn = document.getElementById('signup-btn');
             const backBtn = document.getElementById('back-to-login');
-
             if (extra.style.display === 'none' || extra.style.display === '') {
                 extra.style.display = 'flex';
                 loginBtn.style.display = 'none';
@@ -96,44 +121,24 @@ permalink: /main/editor
             }
         };
 
-        // 3. Auth Logic
         window.handleAuth = async function(mode) {
             const email = document.getElementById('email-field').value;
             const password = document.getElementById('password-field').value;
             const creationKey = document.getElementById('key-field').value;
             const statusBox = document.getElementById('auth-status');
-            
             statusBox.style.color = "#ffeb3b";
-            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Validating key & creating account...";
+            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Creating account...";
 
             if (mode === 'login') {
                 const { error } = await db.auth.signInWithPassword({ email, password });
-                if (error) {
-                    statusBox.style.color = "red";
-                    statusBox.innerText = error.message;
-                } else {
-                    window.checkUser();
-                }
+                if (error) { statusBox.style.color = "red"; statusBox.innerText = error.message; }
+                else { window.checkUser(); }
             } else {
                 const { data, error } = await db.auth.signUp({ 
-                    email, 
-                    password,
-                    options: { data: { creation_key: creationKey } }
+                    email, password, options: { data: { creation_key: creationKey } }
                 });
-
-                if (error) {
-                    statusBox.style.color = "red";
-                    statusBox.innerText = error.message;
-                } else {
-                    if (data.session) {
-                        statusBox.style.color = "#4CAF50";
-                        statusBox.innerText = "Success! Access granted.";
-                        window.checkUser();
-                    } else {
-                        statusBox.style.color = "#0099ff";
-                        statusBox.innerText = "Account created! Please check your email.";
-                    }
-                }
+                if (error) { statusBox.style.color = "red"; statusBox.innerText = error.message; }
+                else { window.checkUser(); }
             }
         };
 
@@ -142,6 +147,7 @@ permalink: /main/editor
             if (user) {
                 document.getElementById('login-overlay').style.display = 'none';
                 document.getElementById('editor-ui').style.display = 'flex';
+                document.getElementById('id-input').value = CURRENT_ID;
                 window.loadData();
             }
         };
@@ -151,26 +157,39 @@ permalink: /main/editor
             location.reload();
         };
 
-        // 4. Editor Logic
+        // 4. Editor Core
         window.loadData = async function() {
-            const { data } = await db.from('levels').select('content').eq('id', PAGE_ID).single();
+            const { data } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
+            
+            // Default image logic
+            const imgPath = data?.content?.imageFile || `${CURRENT_ID}.png`;
+            document.getElementById('img-input').value = imgPath;
+            window.updatePreview(imgPath);
+
             if (data?.content) {
-                document.getElementById('edit-lvl-id').innerText = data.content.title || "";
+                document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
                 document.getElementById('edit-lvl-name').innerText = data.content.name || "";
                 document.getElementById('edit-tags').innerHTML = data.content.tagsHtml || "";
                 document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
                 document.getElementById('tab-headers').innerHTML = "";
                 document.getElementById('tab-contents-container').innerHTML = "";
                 data.content.tabs?.forEach(t => window.createNewTab(t.name, t.content));
+            } else {
+                // Clear for new entry
+                document.getElementById('edit-lvl-id').innerText = "NEW LEVEL";
+                document.getElementById('edit-lvl-name').innerText = "Name Here";
+                document.getElementById('edit-tags').innerHTML = "";
+                document.getElementById('edit-stats').innerHTML = "";
+                document.getElementById('tab-headers').innerHTML = "";
+                document.getElementById('tab-contents-container').innerHTML = "";
+                window.createNewTab("Description", "Enter content...");
             }
         };
 
         window.saveToSupabase = async function() {
             const tabs = [];
-            const buttons = document.querySelectorAll('.tab-button');
-            const contents = document.querySelectorAll('.tab-content');
-            buttons.forEach((btn, i) => {
-                tabs.push({ name: btn.innerText, content: contents[i].innerHTML });
+            document.querySelectorAll('.tab-button').forEach((btn, i) => {
+                tabs.push({ name: btn.innerText, content: document.querySelectorAll('.tab-content')[i].innerHTML });
             });
 
             const payload = {
@@ -178,40 +197,33 @@ permalink: /main/editor
                 name: document.getElementById('edit-lvl-name').innerText,
                 tagsHtml: document.getElementById('edit-tags').innerHTML,
                 statsHtml: document.getElementById('edit-stats').innerHTML,
+                imageFile: document.getElementById('img-input').value,
                 tabs: tabs
             };
 
-            const { error } = await db.from('levels').upsert({ id: PAGE_ID, content: payload });
+            const { error } = await db.from('levels').upsert({ id: CURRENT_ID, content: payload });
             if (error) alert("Error: " + error.message);
-            else alert("Saved Successfully!");
+            else alert(`Saved to ${CURRENT_ID} successfully!`);
         };
 
-        window.createNewTab = function(name = "New Tab", content = "Edit content here...") {
+        window.createNewTab = function(name = "New Tab", content = "Edit...") {
             const id = Date.now();
-            const headerWrap = document.createElement('div');
-            headerWrap.className = 'tab-controls';
-            headerWrap.id = `header-${id}`;
-            headerWrap.innerHTML = `
-                <button class="tab-button active" contenteditable="true">${name}</button>
-                <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>
-            `;
-            document.getElementById('tab-headers').appendChild(headerWrap);
+            const header = document.createElement('div');
+            header.className = 'tab-controls';
+            header.id = `header-${id}`;
+            header.innerHTML = `<button class="tab-button active" contenteditable="true">${name}</button><button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
+            document.getElementById('tab-headers').appendChild(header);
 
-            const contentPane = document.createElement('div');
-            contentPane.className = 'tab-content active';
-            contentPane.id = `content-${id}`;
-            contentPane.contentEditable = "true";
-            contentPane.innerHTML = content;
-            document.getElementById('tab-contents-container').appendChild(contentPane);
+            const pane = document.createElement('div');
+            pane.className = 'tab-content active';
+            pane.id = `content-${id}`;
+            pane.contentEditable = "true";
+            pane.innerHTML = content;
+            document.getElementById('tab-contents-container').appendChild(pane);
         };
 
-        window.deleteTab = function(id) {
-            document.getElementById(`header-${id}`)?.remove();
-            document.getElementById(`content-${id}`)?.remove();
-        };
+        window.deleteTab = (id) => { document.getElementById(`header-${id}`)?.remove(); document.getElementById(`content-${id}`)?.remove(); };
 
-        document.getElementById('target-id').innerText = PAGE_ID;
-        document.getElementById('active-image').src = `/Images/${PAGE_ID}.png`;
         window.checkUser();
     </script>
 </body>

@@ -11,13 +11,15 @@ permalink: /main/editor
     <style>
         #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
         .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; }
-        input[type="email"], input[type="password"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
+        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
         .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
         .secondary-btn { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; margin-top: 5px; }
         [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
         .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; }
         .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; }
         body { padding-top: 80px; }
+        /* Style for the secret key field specifically */
+        #key-field { border-color: #0099ff; margin-bottom: 5px; }
     </style>
 </head>
 <body class="article-page">
@@ -26,6 +28,7 @@ permalink: /main/editor
         <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
         <input type="email" id="email-field" placeholder="Email">
         <input type="password" id="password-field" placeholder="Password">
+        <input type="text" id="key-field" placeholder="Creation Key (Required for Register)">
         
         <div style="display: flex; gap: 10px;">
             <button class="auth-btn" onclick="window.handleAuth('login')">SIGN IN</button>
@@ -62,8 +65,8 @@ permalink: /main/editor
 
     <script>
         // 1. Setup
-        const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
-        const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
+        const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
+        const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -73,6 +76,7 @@ permalink: /main/editor
         window.handleAuth = async function(mode) {
             const email = document.getElementById('email-field').value;
             const password = document.getElementById('password-field').value;
+            const creationKey = document.getElementById('key-field').value;
             const statusBox = document.getElementById('auth-status');
             
             statusBox.style.color = "#ffeb3b";
@@ -87,12 +91,20 @@ permalink: /main/editor
                     window.checkUser();
                 }
             } else {
-                const { data, error } = await db.auth.signUp({ email, password });
+                // SIGNUP: Pass the key into options.data so the SQL trigger can see it
+                const { data, error } = await db.auth.signUp({ 
+                    email, 
+                    password,
+                    options: {
+                        data: { creation_key: creationKey }
+                    }
+                });
+
                 if (error) {
                     statusBox.style.color = "red";
+                    // If the SQL trigger fails, the error message will appear here
                     statusBox.innerText = error.message;
                 } else {
-                    // Supabase sends a session immediately if "Confirm Email" is OFF
                     if (data.session) {
                         statusBox.style.color = "#4CAF50";
                         statusBox.innerText = "Account created! Logging in...";
@@ -105,6 +117,7 @@ permalink: /main/editor
             }
         };
 
+        // ... Keep all other functions (checkUser, handleLogout, loadData, saveToSupabase, etc) exactly as they were ...
         window.checkUser = async function() {
             const { data: { user } } = await db.auth.getUser();
             if (user) {
@@ -119,7 +132,6 @@ permalink: /main/editor
             location.reload();
         };
 
-        // 3. Editor Logic
         window.loadData = async function() {
             const { data } = await db.from('levels').select('content').eq('id', PAGE_ID).single();
             if (data?.content) {
@@ -178,7 +190,6 @@ permalink: /main/editor
             document.getElementById(`content-${id}`)?.remove();
         };
 
-        // 4. Init
         document.getElementById('target-id').innerText = PAGE_ID;
         document.getElementById('active-image').src = `/Images/${PAGE_ID}.png`;
         window.checkUser();

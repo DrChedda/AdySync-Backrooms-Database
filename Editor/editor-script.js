@@ -241,4 +241,13 @@ window.deleteTab = (id) => {
 	}
 };
 
+        function formatDoc(cmd) {
+            if (cmd === 'createLink') {
+                const url = prompt("Enter URL:");
+                if (url) document.execCommand(cmd, false, url);
+            } else {
+                document.execCommand(cmd, false, null);
+            }
+        }
+
 window.checkUser();

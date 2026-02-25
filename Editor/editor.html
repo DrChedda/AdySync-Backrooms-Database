@@ -22,23 +22,56 @@ permalink: /main/editor
             user-select: auto; 
         }
 
+        /* --- SLEEK TOP BAR FIX --- */
         .editor-top-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: var(--top-bar-height);
+            min-height: var(--top-bar-height);
+            height: auto;
             background: var(--panel-bg);
             border-bottom: 2px solid var(--edit-gold);
             z-index: 10001;
             display: none;
             align-items: center;
-            padding: 0 30px;
-            gap: 20px;
+            padding: 10px 20px;
+            gap: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8);
             backdrop-filter: blur(10px);
+            flex-wrap: wrap; 
         }
 
+        .editor-top-bar .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .img-input-container {
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            border-left: 1px solid #333; 
+            padding-left: 20px;
+            flex-grow: 1; 
+            min-width: 200px;
+        }
+
+        #img-input {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .editor-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        /* --- HOVER & TAGS --- */
         .hover-zone {
             position: relative;
             transition: all 0.3s ease;
@@ -101,10 +134,30 @@ permalink: /main/editor
             font-size: 11px;
             cursor: pointer;
             letter-spacing: 1px;
+            white-space: nowrap;
         }
 
         .btn-sleek.blue { background: var(--accent); color: #fff; }
         .btn-sleek.save { background: #00ff66; color: #000; }
+
+        .tags-row .tag {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tags-row .tag:hover {
+            filter: brightness(1.1);
+            background: rgba(255, 51, 51, 0.2) !important;
+            border-color: #ff3333 !important;
+            color: #ff3333 !important;
+        }
+
+        .tags-row .tag:hover::after {
+            content: ' ✕';
+            font-size: 10px;
+            vertical-align: middle;
+        }
 
         .tab-controls {
             display: flex;
@@ -141,31 +194,13 @@ permalink: /main/editor
             text-align: center;
             box-shadow: 0 0 40px var(--accent-glow);
         }
-        .tags-row .tag {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .tags-row .tag:hover {
-            filter: brightness(1.1);
-            background: rgba(255, 51, 51, 0.2) !important;
-            border-color: #ff3333 !important;
-            color: #ff3333 !important;
-        }
-
-        .tags-row .tag:hover::after {
-            content: ' ✕';
-            font-size: 10px;
-            vertical-align: middle;
-        }
     </style>
 </head>
 <body class="article-page">
 
     <div id="login-overlay">
         <div class="auth-card">
-            <h2 style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
+            <h2 id="auth-title" style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <input type="email" id="email-field" class="editor-input" placeholder="EMAIL">
                 <input type="password" id="password-field" class="editor-input" placeholder="PASSWORD">
@@ -174,24 +209,25 @@ permalink: /main/editor
                 </div>
                 <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
                 <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
+                <button class="btn-sleek" id="back-to-login" style="display:none; background: #333; color: #fff;" onclick="window.resetAuthUI()">Back</button>
                 <p id="auth-status" style="font-size: 10px; color: var(--edit-gold); font-family: monospace;"></p>
             </div>
         </div>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
-        <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="input-group">
             <span style="font-family: monospace; font-size: 11px; color: var(--edit-gold);">ID_TARGET:</span>
             <input type="text" id="id-input" class="editor-input" style="width: 100px;">
             <button class="btn-sleek" onclick="window.switchPage()">LOAD</button>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #333; padding-left: 20px;">
+        <div class="img-input-container">
             <span style="font-family: monospace; font-size: 11px; color: var(--accent);">IMG_SRC:</span>
-            <input type="text" id="img-input" class="editor-input" style="width: 250px;" oninput="window.updatePreview(this.value)">
+            <input type="text" id="img-input" class="editor-input" oninput="window.updatePreview(this.value)">
         </div>
 
-        <div style="margin-left: auto; display: flex; gap: 10px;">
+        <div class="editor-actions">
             <button class="btn-sleek save" onclick="window.saveToSupabase()">PUSH TO DATABASE</button>
             <button class="btn-sleek" style="background: #222; color: #fff;" onclick="window.handleLogout()">LOGOUT</button>
         </div>
@@ -363,7 +399,7 @@ window.loadData = async function() {
                 if(confirm('Remove this tag?')) this.remove();
             };
         });
-        
+
         document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
         
         document.getElementById('tab-headers').innerHTML = "";

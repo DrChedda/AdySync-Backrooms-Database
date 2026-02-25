@@ -9,6 +9,7 @@ permalink: /main/editor
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+/* TOP BAR & LAYOUT */
       .editor-top-bar {
         position: fixed;
         top: 0;
@@ -26,6 +27,10 @@ permalink: /main/editor
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
       }
 
+      body {
+        padding-top: 120px;
+      }
+
       #login-overlay {
         position: fixed;
         inset: 0;
@@ -38,9 +43,34 @@ permalink: /main/editor
         gap: 15px;
       }
 
+      .auth-container {
+        border: 2px solid var(--accent);
+        padding: 40px;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 0 20px var(--accent-glow);
+      }
+
+      #signup-extra {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        justify-content: center;
+      }
+
       input[type="email"],
       input[type="password"],
-      input[type="text"] {
+      input[type="text"],
+      select#tag-color-select {
         padding: 12px;
         background: rgba(0, 21, 41, 0.8);
         border: 1px solid var(--accent);
@@ -50,8 +80,24 @@ permalink: /main/editor
         box-shadow: inset 0 0 5px var(--accent-glow);
       }
 
+      .editor-top-bar input[type="text"] {
+        padding: 5px;
+        width: 130px;
+      }
+
       input:focus {
         outline: 2px solid #ffeb3b;
+      }
+
+      [contenteditable="true"] {
+        border: 1px dashed rgba(0, 153, 255, 0.5);
+        transition: border 0.3s;
+      }
+
+      [contenteditable="true"]:focus {
+        border: 1px solid #ffeb3b;
+        outline: none;
+        background: rgba(255, 235, 59, 0.05);
       }
 
       .auth-btn {
@@ -66,9 +112,10 @@ permalink: /main/editor
         transition: transform 0.1s;
       }
 
-      .auth-btn:active {
-        transform: scale(0.95);
-      }
+      .auth-btn:active { transform: scale(0.95); }
+
+      .blue-btn { background: var(--accent); color: white; }
+      .save-btn { background: #4CAF50; color: white; }
 
       .back-btn {
         background: transparent;
@@ -81,30 +128,49 @@ permalink: /main/editor
         font-family: monospace;
       }
 
-      .back-btn:hover {
-        background: rgba(255, 235, 59, 0.1);
+      .back-btn:hover { background: rgba(255, 235, 59, 0.1); }
+
+      .tag-tool-box {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 5px 10px;
+        border: 1px solid #444;
       }
 
-      .blue-btn {
-        background: var(--accent);
-        color: white;
+      .tags-row {
+        min-height: 30px;
+        padding: 10px 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
       }
 
-      .save-btn {
-        background: #4CAF50;
-        color: white;
+      .tag {
+        padding: 4px 12px;
+        border: 1px solid;
+        font-family: 'Consolas', monospace;
+        font-size: 12px;
+        text-transform: uppercase;
+        font-weight: bold;
+        display: inline-block;
       }
 
-      [contenteditable="true"] {
-        border: 1px dashed rgba(0, 153, 255, 0.5);
-        transition: border 0.3s;
-      }
-
-      [contenteditable="true"]:focus {
-        border: 1px solid #ffeb3b;
-        outline: none;
-        background: rgba(255, 235, 59, 0.05);
-      }
+      .tag.dark-red { color: #cc0000; border-color: #cc0000; background: rgba(204, 0, 0, 0.15); }
+      .tag.red { color: #ff3333; border-color: #ff3333; background: rgba(255, 51, 51, 0.15); }
+      .tag.red-orange { color: #ff6633; border-color: #ff6633; background: rgba(255, 102, 51, 0.15); }
+      .tag.orange { color: #ff6600; border-color: #ff6600; background: rgba(255, 102, 0, 0.15); }
+      .tag.yellow-orange { color: #ff9900; border-color: #ff9900; background: rgba(255, 153, 0, 0.15); }
+      .tag.yellow { color: #ffcc00; border-color: #ffcc00; background: rgba(255, 204, 0, 0.15); }
+      .tag.green-yellow { color: #ccff00; border-color: #ccff00; background: rgba(204, 255, 0, 0.15); }
+      .tag.green { color: #00ff66; border-color: #00ff66; background: rgba(0, 255, 102, 0.15); }
+      .tag.dark-green { color: #009933; border-color: #009933; background: rgba(0, 153, 51, 0.15); }
+      .tag.blue { color: #3399ff; border-color: #3399ff; background: rgba(51, 153, 255, 0.15); }
+      .tag.dark-blue { color: #0066cc; border-color: #0066cc; background: rgba(0, 102, 204, 0.15); }
+      .tag.purple { color: #cc66ff; border-color: #cc66ff; background: rgba(204, 102, 255, 0.15); }
+      .tag.dark-purple { color: #9900cc; border-color: #9900cc; background: rgba(153, 0, 204, 0.15); }
+      .tag.pink { color: #ff66cc; border-color: #ff66cc; background: rgba(255, 102, 204, 0.15); }
 
       .id-switcher {
         display: flex;
@@ -122,11 +188,9 @@ permalink: /main/editor
         font-family: monospace;
       }
 
-      .tab-controls {
-        display: flex;
-        align-items: stretch;
-        flex: 1;
-      }
+      .tab-controls { display: flex; align-items: stretch; flex: 1; }
+      .tab-button { user-select: none; }
+      .tab-button[contenteditable="true"] { cursor: text; }
 
       .del-tab {
         background: #cc0000;
@@ -136,297 +200,304 @@ permalink: /main/editor
         padding: 0 10px;
         font-weight: bold;
       }
-
-      .tab-button {
-        user-select: none;
-      }
-
-      .tab-button[contenteditable="true"] {
-        cursor: text;
-      }
-
-      body {
-        padding-top: 100px;
-      }
-
-      #signup-extra {
-        display: none;
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .auth-container {
-        border: 2px solid var(--accent);
-        padding: 40px;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 15px;
-        box-shadow: 0 0 20px var(--accent-glow);
-      }
-
-      .btn-row {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        justify-content: center;
-      }
     </style>
   </head>
   <body class="article-page">
-    <div id="login-overlay">
-      <a href="{{ '/main' | relative_url }}" class="back-btn">← RETURN TO DATABASE</a>
-      <div class="auth-container">
-        <h2 id="auth-title" style="color:white; font-family: monospace; margin-top: 0; letter-spacing: 4px;">ACCESS RESTRICTED</h2>
-        <input type="email" id="email-field" placeholder="DB_USER_EMAIL">
-        <input type="password" id="password-field" placeholder="DB_USER_PASS">
-        <div id="signup-extra">
-          <input type="text" id="key-field" placeholder="CREATION_KEY">
+  <div id="login-overlay">
+    <a href="{{ '/main' | relative_url }}" class="back-btn">← RETURN TO DATABASE</a>
+    <div class="auth-container">
+      <h2 id="auth-title" style="color:white; font-family: monospace; margin-top: 0; letter-spacing: 4px;">ACCESS RESTRICTED</h2>
+      <input type="email" id="email-field" placeholder="DB_USER_EMAIL">
+      <input type="password" id="password-field" placeholder="DB_USER_PASS">
+      <div id="signup-extra">
+        <input type="text" id="key-field" placeholder="CREATION_KEY">
+      </div>
+      <div class="btn-row">
+        <button class="auth-btn" id="login-btn" style="flex:1" onclick="window.handleAuth('login')">SIGN IN</button>
+        <button class="auth-btn blue-btn" id="signup-btn" style="flex:1" onclick="window.toggleSignup()">REGISTER</button>
+      </div>
+      <a id="back-to-login" href="javascript:void(0)" onclick="window.resetAuthUI()" style="display:none; color: #ffeb3b; font-size: 10px; font-family: monospace; text-decoration: underline;">BACK TO LOGIN</a>
+      <p id="auth-status" style="color: #ffeb3b; font-size: 12px; font-family: monospace; text-align: center;"></p>
+    </div>
+  </div>
+
+  <div class="editor-top-bar" id="editor-ui">
+    <div class="id-switcher">
+      <span class="id-label">TARGET_ID:</span>
+      <input type="text" id="id-input" placeholder="level_0">
+      <button class="auth-btn" style="min-width: 60px; padding: 5px 10px; font-size: 11px;" onclick="window.switchPage()">LOAD</button>
+    </div>
+
+    <div class="tag-tool-box">
+      <span class="id-label">NEW_TAG:</span>
+      <input type="text" id="new-tag-text" placeholder="Tag Name..." style="width: 100px;">
+      <select id="tag-color-select">
+        <option value="orange">Orange</option>
+        <option value="yellow">Yellow</option>
+        <option value="red">Red</option>
+        <option value="dark-red">Dark Red</option>
+        <option value="red-orange">Red-Orange</option>
+        <option value="yellow-orange">Yellow-Orange</option>
+        <option value="green-yellow">Green-Yellow</option>
+        <option value="green">Green</option>
+        <option value="dark-green">Dark Green</option>
+        <option value="blue">Blue</option>
+        <option value="dark-blue">Dark Blue</option>
+        <option value="purple">Purple</option>
+        <option value="dark-purple">Dark Purple</option>
+        <option value="pink">Pink</option>
+      </select>
+      <button class="auth-btn" style="padding: 5px 10px; font-size: 11px;" onclick="window.addTag()">ADD</button>
+    </div>
+
+    <div class="id-switcher" style="border-color: var(--accent);">
+      <span class="id-label" style="color: var(--accent);">IMG_PATH:</span>
+      <input type="text" id="img-input" placeholder="level_0.png" style="width: 150px;" oninput="window.updatePreview(this.value)">
+    </div>
+
+    <button class="auth-btn blue-btn" onclick="window.createNewTab()">+ NEW TAB</button>
+    <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
+    <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
+  </div>
+
+  <div class="page-wrapper">
+    <div class="level-header-area">
+      <div class="image-box">
+        <img id="active-image" src="" alt="Preview">
+      </div>
+      <div class="title-container">
+        <div class="title-group">
+          <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
+          <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
         </div>
-        <div class="btn-row">
-          <button class="auth-btn" id="login-btn" style="flex:1" onclick="window.handleAuth('login')">SIGN IN</button>
-          <button class="auth-btn blue-btn" id="signup-btn" style="flex:1" onclick="window.toggleSignup()">REGISTER</button>
+        
+        <div id="edit-tags" contenteditable="true" class="tags-row">
+           <span class="tag orange" contenteditable="false">Survivability: N/A</span>
+           <span class="tag yellow" contenteditable="false">Generation: Static</span>
         </div>
-        <a id="back-to-login" href="javascript:void(0)" onclick="window.resetAuthUI()" style="display:none; color: #ffeb3b; font-size: 10px; font-family: monospace; text-decoration: underline;">BACK TO LOGIN</a>
-        <p id="auth-status" style="color: #ffeb3b; font-size: 12px; font-family: monospace; text-align: center;"></p>
+
+        <div id="edit-stats" contenteditable="true" class="data-box"></div>
       </div>
     </div>
-    <div class="editor-top-bar" id="editor-ui">
-      <div class="id-switcher">
-        <span class="id-label">TARGET_ID:</span>
-        <input type="text" id="id-input" placeholder="level_0" style="width: 130px; padding: 5px;">
-        <button class="auth-btn" style="min-width: 60px; padding: 5px 10px; font-size: 11px;" onclick="window.switchPage()">LOAD</button>
-      </div>
-      <div class="id-switcher" style="border-color: var(--accent);">
-        <span class="id-label" style="color: var(--accent);">IMG_PATH:</span>
-        <input type="text" id="img-input" placeholder="level_0.png" style="width: 150px; padding: 5px;" oninput="window.updatePreview(this.value)">
-      </div>
-      <button class="auth-btn blue-btn" onclick="window.createNewTab()">+ NEW TAB</button>
-      <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
-      <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
+
+    <div class="information-box">
+      <div id="tab-headers" class="tabs-container"></div>
+      <div id="tab-contents-container"></div>
     </div>
-    <div class="page-wrapper">
-      <div class="level-header-area">
-        <div class="image-box">
-          <img id="active-image" src="" alt="Preview">
-        </div>
-        <div class="title-container">
-          <div class="title-group">
-            <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
-            <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
-          </div>
-          <div id="edit-tags" contenteditable="true" class="tags-row"></div>
-          <div id="edit-stats" contenteditable="true" class="data-box"></div>
-        </div>
-      </div>
-      <div class="information-box">
-        <div id="tab-headers" class="tabs-container"></div>
-        <div id="tab-contents-container"></div>
-      </div>
-    </div>
+  </div>
     <script>
-      const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
-      const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
-      const db = window.supabase.createClient(supabaseUrl, supabaseKey);
-      const urlParams = new URLSearchParams(window.location.search);
-      let CURRENT_ID = urlParams.get('id') || 'level-0';
-      window.toggleSignup = function() {
-        const extra = document.getElementById('signup-extra');
-        const loginBtn = document.getElementById('login-btn');
-        const signupBtn = document.getElementById('signup-btn');
-        const backBtn = document.getElementById('back-to-login');
-        const title = document.getElementById('auth-title');
-        if (extra.style.display === 'none' || extra.style.display === '') {
-          extra.style.display = 'flex';
-          loginBtn.style.display = 'none';
-          backBtn.style.display = 'block';
-          title.innerText = "CREATE ACCOUNT";
-          signupBtn.innerText = "CONFIRM REGISTRATION";
-          signupBtn.style.width = "100%";
-        } else {
-          window.handleAuth('signup');
-        }
-      };
-      window.resetAuthUI = function() {
-        document.getElementById('signup-extra').style.display = 'none';
-        document.getElementById('login-btn').style.display = 'block';
-        document.getElementById('back-to-login').style.display = 'none';
-        document.getElementById('auth-title').innerText = "ACCESS RESTRICTED";
-        const signupBtn = document.getElementById('signup-btn');
-        signupBtn.innerText = "REGISTER";
-        signupBtn.style.width = "auto";
-      };
-      window.handleAuth = async function(mode) {
-        const email = document.getElementById('email-field').value;
-        const password = document.getElementById('password-field').value;
-        const creationKey = document.getElementById('key-field').value;
-        const statusBox = document.getElementById('auth-status');
-        if (mode === 'login') {
-          const {
-            error
-          } = await db.auth.signInWithPassword({
-            email,
-            password
-          });
-          if (error) statusBox.innerText = "ERROR: " + error.message;
-          else window.checkUser();
-        } else {
-          const {
-            error
-          } = await db.auth.signUp({
-            email,
-            password,
-            options: {
-              data: {
-                creation_key: creationKey
-              }
-            }
-          });
-          if (error) statusBox.innerText = "ERROR: " + error.message;
-          else statusBox.innerText = "CHECK EMAIL FOR LINK";
-        }
-      };
-      window.checkUser = async function() {
-        const {
-          data: {
-            user
-          }
-        } = await db.auth.getUser();
-        if (user) {
-          document.getElementById('login-overlay').style.display = 'none';
-          document.getElementById('editor-ui').style.display = 'flex';
-          document.getElementById('id-input').value = CURRENT_ID;
-          window.loadData();
-        }
-      };
-      window.switchPage = function() {
-        const newId = document.getElementById('id-input').value.trim();
-        if (newId) {
-          CURRENT_ID = newId;
-          const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + CURRENT_ID;
-          window.history.pushState({
-            path: newurl
-          }, '', newurl);
-          window.loadData();
-        }
-      };
-      window.updatePreview = function(val) {
-        if (!val) return;
-        const repoBase = '/AdySync-Backrooms-Database';
-        let finalSrc;
-        if (val.startsWith('http')) {
-          finalSrc = val;
-        } else {
-          const cleanName = val.startsWith('/') ? val.substring(1) : val;
-          if (cleanName.toLowerCase().startsWith('images/')) {
-            finalSrc = `${repoBase}/${cleanName}`;
-          } else {
-            finalSrc = `${repoBase}/Images/${cleanName}`;
-          }
-        }
-        const imgElement = document.getElementById('active-image');
-        imgElement.onerror = function() {
-          this.src = `${repoBase}/Images/placeholder.png`;
-          this.onerror = null;
-        };
-        imgElement.src = finalSrc;
-      };
-      window.handleLogout = async function() {
-        await db.auth.signOut();
-        location.reload();
-      };
-      window.loadData = async function() {
-        const {
-          data
-        } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
-        const imgPath = data?.content?.imageFile || `${CURRENT_ID}.png`;
-        document.getElementById('img-input').value = imgPath;
-        window.updatePreview(imgPath);
-        if (data?.content) {
-          document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
-          document.getElementById('edit-lvl-name').innerText = data.content.name || "";
-          document.getElementById('edit-tags').innerHTML = data.content.tagsHtml || "";
-          document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
-          document.getElementById('tab-headers').innerHTML = "";
-          document.getElementById('tab-contents-container').innerHTML = "";
-          data.content.tabs?.forEach((t, i) => window.createNewTab(t.name, t.content, i === 0));
-        }
-      };
-      window.saveToSupabase = async function() {
-        const tabs = [];
-        const headers = document.querySelectorAll('.tab-button');
-        const contents = document.querySelectorAll('.tab-content');
-        headers.forEach((btn, i) => {
-          tabs.push({
+const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
+const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
+const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+const urlParams = new URLSearchParams(window.location.search);
+let CURRENT_ID = urlParams.get('id') || 'level-0';
+
+window.toggleSignup = function() {
+    const extra = document.getElementById('signup-extra');
+    const loginBtn = document.getElementById('login-btn');
+    const signupBtn = document.getElementById('signup-btn');
+    const backBtn = document.getElementById('back-to-login');
+    const title = document.getElementById('auth-title');
+    if (extra.style.display === 'none' || extra.style.display === '') {
+        extra.style.display = 'flex';
+        loginBtn.style.display = 'none';
+        backBtn.style.display = 'block';
+        title.innerText = "CREATE ACCOUNT";
+        signupBtn.innerText = "CONFIRM REGISTRATION";
+        signupBtn.style.width = "100%";
+    } else {
+        window.handleAuth('signup');
+    }
+};
+
+window.resetAuthUI = function() {
+    document.getElementById('signup-extra').style.display = 'none';
+    document.getElementById('login-btn').style.display = 'block';
+    document.getElementById('back-to-login').style.display = 'none';
+    document.getElementById('auth-title').innerText = "ACCESS RESTRICTED";
+    const signupBtn = document.getElementById('signup-btn');
+    signupBtn.innerText = "REGISTER";
+    signupBtn.style.width = "auto";
+};
+
+window.handleAuth = async function(mode) {
+    const email = document.getElementById('email-field').value;
+    const password = document.getElementById('password-field').value;
+    const creationKey = document.getElementById('key-field').value;
+    const statusBox = document.getElementById('auth-status');
+    if (mode === 'login') {
+        const { error } = await db.auth.signInWithPassword({ email, password });
+        if (error) statusBox.innerText = "ERROR: " + error.message;
+        else window.checkUser();
+    } else {
+        const { error } = await db.auth.signUp({
+            email, password,
+            options: { data: { creation_key: creationKey } }
+        });
+        if (error) statusBox.innerText = "ERROR: " + error.message;
+        else statusBox.innerText = "CHECK EMAIL FOR LINK";
+    }
+};
+
+window.checkUser = async function() {
+    const { data: { user } } = await db.auth.getUser();
+    if (user) {
+        document.getElementById('login-overlay').style.display = 'none';
+        document.getElementById('editor-ui').style.display = 'flex';
+        document.getElementById('id-input').value = CURRENT_ID;
+        window.loadData();
+    }
+};
+
+window.handleLogout = async function() {
+    await db.auth.signOut();
+    location.reload();
+};
+
+window.switchPage = function() {
+    const newId = document.getElementById('id-input').value.trim();
+    if (newId) {
+        CURRENT_ID = newId;
+        const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + CURRENT_ID;
+        window.history.pushState({ path: newurl }, '', newurl);
+        window.loadData();
+    }
+};
+
+window.updatePreview = function(val) {
+    if (!val) return;
+    const repoBase = '/AdySync-Backrooms-Database';
+    let finalSrc;
+    if (val.startsWith('http')) {
+        finalSrc = val;
+    } else {
+        const cleanName = val.startsWith('/') ? val.substring(1) : val;
+        finalSrc = cleanName.toLowerCase().startsWith('images/') ? `${repoBase}/${cleanName}` : `${repoBase}/Images/${cleanName}`;
+    }
+    const imgElement = document.getElementById('active-image');
+    imgElement.onerror = function() {
+        this.src = `${repoBase}/Images/placeholder.png`;
+        this.onerror = null;
+    };
+    imgElement.src = finalSrc;
+};
+
+window.addTag = function() {
+    const text = document.getElementById('new-tag-text').value.trim();
+    const color = document.getElementById('tag-color-select').value;
+    if (!text) return;
+
+    const tagHtml = `<span class="tag ${color}" contenteditable="false">${text}</span> `;
+    document.getElementById('edit-tags').innerHTML += tagHtml;
+    document.getElementById('new-tag-text').value = "";
+};
+
+window.loadData = async function() {
+    const { data } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
+    
+    const imgPath = data?.content?.imageFile || `${CURRENT_ID}.png`;
+    document.getElementById('img-input').value = imgPath;
+    window.updatePreview(imgPath);
+
+    if (data?.content) {
+        document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
+        document.getElementById('edit-lvl-name').innerText = data.content.name || "";
+        
+        const tagsBox = document.getElementById('edit-tags');
+        tagsBox.innerHTML = data.content.tagsHtml || 
+            `<span class="tag orange" contenteditable="false">Survivability: N/A</span> <span class="tag yellow" contenteditable="false">Generation: Static</span>`;
+
+        document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
+        
+        document.getElementById('tab-headers').innerHTML = "";
+        document.getElementById('tab-contents-container').innerHTML = "";
+        data.content.tabs?.forEach((t, i) => window.createNewTab(t.name, t.content, i === 0));
+    }
+};
+
+window.saveToSupabase = async function() {
+    const tabs = [];
+    const headers = document.querySelectorAll('.tab-button');
+    const contents = document.querySelectorAll('.tab-content');
+    headers.forEach((btn, i) => {
+        tabs.push({
             name: btn.innerText,
             content: contents[i].innerHTML
-          });
         });
-        const payload = {
-          title: document.getElementById('edit-lvl-id').innerText,
-          name: document.getElementById('edit-lvl-name').innerText,
-          tagsHtml: document.getElementById('edit-tags').innerHTML,
-          statsHtml: document.getElementById('edit-stats').innerHTML,
-          imageFile: document.getElementById('img-input').value,
-          tabs: tabs
-        };
-        const {
-          error
-        } = await db.from('levels').upsert({
-          id: CURRENT_ID,
-          content: payload
-        });
-        if (error) alert("Error: " + error.message);
-        else alert(`SUCCESS: Data pushed to ${CURRENT_ID}`);
-      };
-      window.setActiveTab = function(id) {
-        document.querySelectorAll('.tab-button').forEach(b => {
-          b.classList.remove('active');
-          b.contentEditable = "false";
-        });
-        document.querySelectorAll('.tab-content').forEach(c => {
-          c.classList.remove('active');
-          c.contentEditable = "false";
-        });
-        const activeBtn = document.querySelector(`#header-${id} .tab-button`);
-        const activeContent = document.getElementById(`content-${id}`);
-        activeBtn.classList.add('active');
+    });
+
+    const payload = {
+        title: document.getElementById('edit-lvl-id').innerText,
+        name: document.getElementById('edit-lvl-name').innerText,
+        tagsHtml: document.getElementById('edit-tags').innerHTML,
+        statsHtml: document.getElementById('edit-stats').innerHTML,
+        imageFile: document.getElementById('img-input').value,
+        tabs: tabs
+    };
+
+    const { error } = await db.from('levels').upsert({
+        id: CURRENT_ID,
+        content: payload
+    });
+
+    if (error) alert("Error: " + error.message);
+    else alert(`SUCCESS: Data pushed to ${CURRENT_ID}`);
+};
+
+window.setActiveTab = function(id) {
+    document.querySelectorAll('.tab-button').forEach(b => {
+        b.classList.remove('active');
+        b.contentEditable = "false";
+    });
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+        c.contentEditable = "false";
+    });
+    const headerEl = document.querySelector(`#header-${id} .tab-button`);
+    const activeContent = document.getElementById(`content-${id}`);
+    if (headerEl && activeContent) {
+        headerEl.classList.add('active');
         activeContent.classList.add('active');
         activeContent.contentEditable = "true";
-      };
-      window.createNewTab = function(name = "New Tab", content = "Edit content...", isFirst = false) {
-        const id = Date.now() + Math.random().toString(36).substr(2, 9);
-        const header = document.createElement('div');
-        header.className = 'tab-controls';
-        header.id = `header-${id}`;
-        header.innerHTML = `
-                
-							<button class="tab-button" 
-                    onclick="window.setActiveTab('${id}')" 
-                    ondblclick="this.contentEditable='true'; this.focus();"
-                    onblur="this.contentEditable='false'">${name}</button>
-											<button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
-        document.getElementById('tab-headers').appendChild(header);
-        const pane = document.createElement('div');
-        pane.className = 'tab-content';
-        pane.id = `content-${id}`;
-        pane.innerHTML = content;
-        document.getElementById('tab-contents-container').appendChild(pane);
-        if (isFirst || document.querySelectorAll('.tab-button').length === 1) {
-          window.setActiveTab(id);
-        }
-      };
-      window.deleteTab = (id) => {
-        const wasActive = document.querySelector(`#header-${id} .tab-button`).classList.contains('active');
-        document.getElementById(`header-${id}`)?.remove();
-        document.getElementById(`content-${id}`)?.remove();
-        if (wasActive) {
-          const firstRemaining = document.querySelector('.tab-controls');
-          if (firstRemaining) window.setActiveTab(firstRemaining.id.replace('header-', ''));
-        }
-      };
-      window.checkUser();
+    }
+};
+
+window.createNewTab = function(name = "New Tab", content = "Edit content...", isFirst = false) {
+    const id = Date.now() + Math.random().toString(36).substr(2, 9);
+    const header = document.createElement('div');
+    header.className = 'tab-controls';
+    header.id = `header-${id}`;
+    header.innerHTML = `
+        <button class="tab-button" 
+            onclick="window.setActiveTab('${id}')" 
+            ondblclick="this.contentEditable='true'; this.focus();"
+            onblur="this.contentEditable='false'">${name}</button>
+        <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
+    document.getElementById('tab-headers').appendChild(header);
+
+    const pane = document.createElement('div');
+    pane.className = 'tab-content';
+    pane.id = `content-${id}`;
+    pane.innerHTML = content;
+    document.getElementById('tab-contents-container').appendChild(pane);
+
+    if (isFirst || document.querySelectorAll('.tab-button').length === 1) {
+        window.setActiveTab(id);
+    }
+};
+
+window.deleteTab = (id) => {
+    const header = document.querySelector(`#header-${id} .tab-button`);
+    const wasActive = header ? header.classList.contains('active') : false;
+    document.getElementById(`header-${id}`)?.remove();
+    document.getElementById(`content-${id}`)?.remove();
+    if (wasActive) {
+        const firstRemaining = document.querySelector('.tab-controls');
+        if (firstRemaining) window.setActiveTab(firstRemaining.id.replace('header-', ''));
+    }
+};
+
+window.checkUser();
     </script>
   </body>
 </html>

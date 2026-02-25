@@ -58,7 +58,7 @@ permalink: /main/editor
         // 1. Setup Supabase
         const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
         const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         const urlParams = new URLSearchParams(window.location.search);
         const PAGE_ID = urlParams.get('id') || 'level-0';

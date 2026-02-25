@@ -1,122 +1,109 @@
----
-permalink: /main/level-0/
----
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 0 | Database</title>
+    <title>Global Editor</title>
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
-    <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .editor-ui-fixed { position: fixed; top: 0; width: 100%; background: #1a1a1a; z-index: 1000; border-bottom: 2px solid #ffeb3b; padding: 10px; display: flex; gap: 20px; align-items: center; }
+        .save-btn { background: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer; font-weight: bold; }
+        .add-tab-btn { background: #0099ff; color: white; border: none; padding: 8px 15px; cursor: pointer; }
+        [contenteditable="true"]:hover { outline: 1px dashed #ffeb3b; }
+        body { padding-top: 70px; }
+    </style>
 </head>
-
 <body class="article-page">
-
-    <nav id="top-nav">
-        <a href="{{ '/main' | relative_url }}" class="nav-btn">← BACK</a>
-        <input type="text" id="search-box" placeholder="Search page content...">
-        <button id="search-btn-nav" class="nav-btn" onclick="searchText()">Search</button>
-        <div class="nav-title">[Backrooms Level Database]</div>
-    </nav>
+    <div class="editor-ui-fixed">
+        <span style="color:white">Editing ID: <strong id="current-id"></strong></span>
+        <button class="save-btn" onclick="saveToSupabase()">PUBLISH CHANGES</button>
+        <button class="add-tab-btn" onclick="addNewTab()">+ ADD NEW TAB</button>
+    </div>
 
     <div class="page-wrapper">
-
         <div class="level-header-area">
-            <div class="image-box">
-                <img src="{{ '/Images/Level_0.png' | relative_url }}" alt="Level View">
-            </div>
-
             <div class="title-container">
-                <div class="title-group">
-                    <h1 class="level-id">Level 0</h1>
-                    <h2 class="level-name">"Infinite Yellow Corridors"</h2>
-                </div>
-
-                <div class="tags-row">
-                    <span class="tag red">Survivability: Dangerous</span>
-                    <span class="tag blue">Generation: Random</span>
-                    <span class="tag dark-green">Mold Presence: High</span>
-                </div>
-
-                <div class="data-box">
-                    <div class="data-item"><strong>HABITABILITY:</strong> 43%</div>
-                    <div class="data-item"><strong>SIZE:</strong> Infinite</div>
+                <h1 id="lvl-id-title" contenteditable="true">Level 0</h1>
+                <h2 id="lvl-name-title" contenteditable="true">"Level Name"</h2>
+                <div class="tags-row" id="edit-tags" contenteditable="true">
+                    <span class="tag red">Survivability: Unknown</span>
                 </div>
             </div>
         </div>
 
         <div class="information-box">
-            <div class="tabs-container">
-                <button class="tab-button active" data-tab="info-tab">Information</button>
-                <button class="tab-button" data-tab="Landmarks-tab">Landmarks</button>
-            </div>
-
-            <div class="tab-content active" id="info-tab">
-                <div class="section-label">Access Points: Level Entrances</div>
-                <div class="description-text">
-                    <h3>The Chasm (Level-0.35)</h3>
-                    <p>A giant spacious area with a large, mold-infested hole in the ceiling glowing light green. Leads to a new level; BPJ or E&L are required for access.</p>
-                    <p><strong>Navigation:</strong> Coordinates: 5020 X, 3705 Z | Distance: 8549 Studs</p>
-
-                    <h3>The Pitfalls (Level-0.5 Entrance)</h3>
-                    <p>A long rectangular strip of ground filled with separated holes. The drop-down to Level-0.5 is located at the <strong>12th pit</strong> (the largest hole on the left).</p>
-                    <p><strong>Navigation:</strong> Coordinates: -4671 X, -1099 Z | Distance: 3205 Studs</p>
-
-                    <h3>Viridescent Heights (Level-0.7 Entrance)</h3>
-                    <p>A dark room with a structure resembling the Viridescent Halls at the top. The entrance to Level-0.7 is a hole in the wall on the second floor that descends directly downwards.</p>
-
-                    <h3>Orange Room (Level-0.775 Entrance)</h3>
-                    <p>A room with an orange window and a concrete corridor. A metal door at the end of the corridor leads to Level-0.775.</p>
-                    <p><strong>Navigation:</strong> Coordinates: 2421 X, 4987 Z | Distance: 7873 Studs</p>
-
-                    <h3>Infmart Door (Level-9 Entrance)</h3>
-                    <p>A safe settlement situated east of the ASYNC beacon. Features a Tier 1 crafting table, traders, and vending machines. This is the primary direct route to Level-9.</p>
-                    <p><strong>Navigation:</strong> Coordinates: -1524 X, -1777 Z | Distance: 0 Studs (Beacon Site)</p>
-
-                    <h3>Level-37 / Poolrooms Entrance</h3>
-                    <p>Identified by a metal door and walls lined with pipes leaking a water-like substance. Does not require a key to open.</p>
-                    <p><strong>Navigation:</strong> Coordinates: -2870 X, -195 Z | Distance: 2069 Studs</p>
+            <div class="tabs-container" id="tab-headers">
                 </div>
-            </div>
-
-            <div class="tab-content" id="Landmarks-tab">
-
-                <div class="section-label">Faction Bases</div>
-                <div class="description-text">
-                    <h3>Wayfinders Stronghold</h3>
-                    <p>A forward operating base and trading outpost. Built with wooden tents, wagons, and lamps to house travelers and merchants.</p>
-
-                    <h3>Station Norland</h3>
-                    <p>M-State settlement on the second floor of the Megastructure. Consists of metal barracks and research labs.</p>
+            <div id="tab-contents-container">
                 </div>
-
-                <div class="section-label">Landmarks</div>
-                <div class="description-text">
-                    <h3>The Cinema</h3>
-                    <p><strong>[Outdated - Rework in Progress]</strong> A grand three-story establishment run by the Protophytans. The hub is public, but the basement and upper floors require tickets. No weapons or vandalism allowed.</p>
-                    <p><strong>Navigation:</strong> Coordinates: 412 X, 2919 Z | Distance: 5086 Studs</p>
-
-                    <h3>Infinitelands Megastructure</h3>
-                    <p>A deep-land structure with three floors and a central "death-pit." The surface floor is decorated with organized furniture, including comfy chairs and paintings.</p>
-                    <p><strong>Navigation:</strong> Coordinates: 2032X, 7457 Z | Distance: 9901 Studs</p>
-
-                    <h3>Neighborhood House</h3>
-                    <p>A highly unstable house resembling Level-9 architecture that has noclipped into Level-0. Parts of the walls and windows act as noclip boundaries. An orange light glows from the second floor.</p>
-                    <p><strong>Navigation:</strong> Coordinates: 7500 X, 980 Z | Distance: 9450 Studs</p>
-
-                    <h3>Sinkhole</h3>
-                    <p>A giant downward hole in the western region. Previously linked to Level-49.</p>
-                    <p><strong>Navigation:</strong> Coordinates: -389 X, 5634 Z | Distance: 7500 Studs</p>
-                </div>
-
-            </div>
         </div>
     </div>
 
+
+    <script>
+        const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
+        const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const PAGE_ID = urlParams.get('id') || 'level-0';
+        document.getElementById('current-id').innerText = PAGE_ID;
+
+        function addNewTab() {
+            const timestamp = Date.now();
+            createTabElements(`Tab ${timestamp}`, `Content for tab...`, timestamp);
+        }
+
+        function createTabElements(name, content, id) {
+            const btn = document.createElement('button');
+            btn.className = 'tab-button';
+            btn.innerText = name;
+            btn.contentEditable = true;
+            document.getElementById('tab-headers').appendChild(btn);
+
+            const div = document.createElement('div');
+            div.className = 'tab-content';
+            div.id = `tab-${id}`;
+            div.innerHTML = content;
+            div.contentEditable = true;
+            document.getElementById('tab-contents-container').appendChild(div);
+        }
+
+        async function saveToSupabase() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanels = document.querySelectorAll('.tab-content');
+            
+            let tabsData = [];
+            tabButtons.forEach((btn, index) => {
+                tabsData.push({
+                    name: btn.innerText,
+                    content: tabPanels[index].innerHTML
+                });
+            });
+
+            const payload = {
+                title: document.getElementById('lvl-id-title').innerText,
+                name: document.getElementById('lvl-name-title').innerText,
+                tagsHtml: document.getElementById('edit-tags').innerHTML,
+                tabs: tabsData
+            };
+
+            const { error } = await supabase.from('levels').upsert({ id: PAGE_ID, content: payload });
+            if (error) alert("Error: " + error.message);
+            else alert("Level Saved!");
+        }
+
+        async function load() {
+            const { data } = await supabase.from('levels').select('content').eq('id', PAGE_ID).single();
+            if (data) {
+                document.getElementById('lvl-id-title').innerText = data.content.title;
+                document.getElementById('lvl-name-title').innerText = data.content.name;
+                document.getElementById('edit-tags').innerHTML = data.content.tagsHtml;
+                data.content.tabs.forEach((t, i) => createTabElements(t.name, t.content, i));
+            }
+        }
+        load();
+    </script>
     <script src="{{ '/main/master-script.js' | relative_url }}"></script>
-
 </body>
-
 </html>

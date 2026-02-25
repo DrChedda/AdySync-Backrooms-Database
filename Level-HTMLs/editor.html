@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Database Editor | Protected</title>
+    <link rel="stylesheet" href="/main/master-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
+        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; }
+        input[type="email"], input[type="password"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
+        .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        body { padding-top: 80px; }
+    </style>
+</head>
+<body class="article-page">
+
+    <div id="login-overlay">
+        <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button class="auth-btn" onclick="handleLogin()">SIGN IN</button>
+        <p id="auth-error" style="color: red; font-size: 12px;"></p>
+    </div>
+
+    <div class="editor-top-bar" id="editor-ui">
+        <div style="color: #ffeb3b;">TARGET: <span id="target-id"></span></div>
+        <button class="auth-btn" style="background: #4CAF50; color: white;" onclick="saveToSupabase()">PUSH CHANGES</button>
+        <button class="auth-btn" style="background: #444; color: white;" onclick="supabase.auth.signOut().then(() => location.reload())">LOGOUT</button>
+    </div>
+
+    <div class="page-wrapper">
+        </div>
+
+    <script>
+        const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
+        const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
+        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const PAGE_ID = urlParams.get('id') || 'level-0';
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                document.getElementById('auth-error').innerText = error.message;
+            } else {
+                checkUser();
+            }
+        }
+
+        async function checkUser() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('editor-ui').style.display = 'flex';
+                loadData();
+            }
+        }
+
+        async function saveToSupabase() {
+            const { error } = await supabase.from('levels').upsert({ id: PAGE_ID, content: payload });
+            if (error) alert("Unauthorized: Only editors can save.");
+            else alert("Changes Pushed!");
+        }
+
+        checkUser();
+    </script>
+</body>
+</html>

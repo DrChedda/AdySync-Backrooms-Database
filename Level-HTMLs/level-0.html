@@ -20,19 +20,23 @@ permalink: /main/level-0/
 
     <div class="page-wrapper">
         <div class="level-header-area">
+            <div class="image-box">
+                <img id="v-image" src="" alt="Level View">
+            </div>
+
             <div class="title-container">
-                <h1 id="v-id" class="level-id">Loading...</h1>
-                <h2 id="v-name" class="level-name"></h2>
-                <div class="tags-row" id="v-tags">
-                    </div>
+                <div class="title-group">
+                    <h1 id="v-id" class="level-id">Loading...</h1>
+                    <h2 id="v-name" class="level-name"></h2>
+                </div>
+                <div class="tags-row" id="v-tags"></div>
+                <div id="v-stats"></div>
             </div>
         </div>
 
         <div class="information-box">
-            <div class="tabs-container" id="v-tab-headers">
-                </div>
-            <div id="v-tab-contents">
-                </div>
+            <div class="tabs-container" id="v-tab-headers"></div>
+            <div id="v-tab-contents"></div>
         </div>
     </div>
 
@@ -45,6 +49,14 @@ permalink: /main/level-0/
         const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
         const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
 
         async function renderLevel() {
             const { data, error } = await supabaseClient
@@ -59,31 +71,54 @@ permalink: /main/level-0/
             }
 
             const c = data.content;
+            const repoBase = '/AdySync-Backrooms-Database';
             
-            document.getElementById('v-id').innerText = c.title;
-            document.getElementById('v-name').innerText = c.name;
-            document.getElementById('v-tags').innerHTML = c.tagsHtml;
+            const imgElement = document.getElementById('v-image');
+            let imgVal = c.imageFile || (PAGE_ID + ".png");
+            
+            if (imgVal.startsWith('http')) {
+                imgElement.src = imgVal;
+            } else {
+                const cleanName = imgVal.startsWith('/') ? imgVal.substring(1) : imgVal;
+                const pathPrefix = cleanName.toLowerCase().startsWith('images/') ? '' : 'Images/';
+                imgElement.src = `${repoBase}/${pathPrefix}${cleanName}`;
+            }
+
+            imgElement.onerror = function() {
+                this.src = `${repoBase}/Images/placeholder.png`;
+                this.onerror = null;
+            };
+
+            document.getElementById('v-id').innerText = c.title || PAGE_ID;
+            document.getElementById('v-name').innerText = c.name || "";
+            document.getElementById('v-tags').innerHTML = c.tagsHtml || "";
+            
+            if(c.statsHtml) {
+                document.getElementById('v-stats').innerHTML = c.statsHtml;
+            }
 
             const hContainer = document.getElementById('v-tab-headers');
             const cContainer = document.getElementById('v-tab-contents');
 
-            c.tabs.forEach((tab, i) => {
-                const isActive = i === 0 ? 'active' : '';
+            if (c.tabs && c.tabs.length > 0) {
+                c.tabs.forEach((tab, i) => {
+                    const isActive = i === 0 ? 'active' : '';
+                    const tabId = `tab-${i}`;
 
-                const btn = document.createElement('button');
-                btn.className = `tab-button ${isActive}`;
-                btn.setAttribute('data-tab', `tab-${i}`);
-                btn.innerText = tab.name;
-                
-                btn.onclick = () => switchTab(`tab-${i}`); 
-                hContainer.appendChild(btn);
+                    const btn = document.createElement('button');
+                    btn.className = `tab-button ${isActive}`;
+                    btn.setAttribute('data-tab', tabId);
+                    btn.innerText = tab.name;
+                    btn.onclick = () => switchTab(tabId); 
+                    hContainer.appendChild(btn);
 
-                const pane = document.createElement('div');
-                pane.className = `tab-content ${isActive}`;
-                pane.id = `tab-${i}`;
-                pane.innerHTML = tab.content;
-                cContainer.appendChild(pane);
-            });
+                    const pane = document.createElement('div');
+                    pane.className = `tab-content ${isActive}`;
+                    pane.id = tabId;
+                    pane.innerHTML = tab.content;
+                    cContainer.appendChild(pane);
+                });
+            }
         }
 
         renderLevel();

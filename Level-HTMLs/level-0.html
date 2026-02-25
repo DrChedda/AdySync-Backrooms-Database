@@ -5,108 +5,88 @@ permalink: /main/level-0/
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Global Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database | View</title>
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        .editor-ui-fixed { position: fixed; top: 0; width: 100%; background: #1a1a1a; z-index: 1000; border-bottom: 2px solid #ffeb3b; padding: 10px; display: flex; gap: 20px; align-items: center; }
-        .save-btn { background: #4CAF50; color: white; border: none; padding: 8px 15px; cursor: pointer; font-weight: bold; }
-        .add-tab-btn { background: #0099ff; color: white; border: none; padding: 8px 15px; cursor: pointer; }
-        [contenteditable="true"]:hover { outline: 1px dashed #ffeb3b; }
-        body { padding-top: 70px; }
-    </style>
 </head>
 <body class="article-page">
-    <div class="editor-ui-fixed">
-        <span style="color:white">Editing ID: <strong id="current-id"></strong></span>
-        <button class="save-btn" onclick="saveToSupabase()">PUBLISH CHANGES</button>
-        <button class="add-tab-btn" onclick="addNewTab()">+ ADD NEW TAB</button>
-    </div>
+
+    <nav id="top-nav">
+        <a href="{{ '/main' | relative_url }}" class="nav-btn">← BACK</a>
+        <input type="text" id="search-box" placeholder="Search page content...">
+        <div class="nav-title">[Backrooms Level Database]</div>
+    </nav>
 
     <div class="page-wrapper">
         <div class="level-header-area">
             <div class="title-container">
-                <h1 id="lvl-id-title" contenteditable="true">Level 0</h1>
-                <h2 id="lvl-name-title" contenteditable="true">"Level Name"</h2>
-                <div class="tags-row" id="edit-tags" contenteditable="true">
-                    <span class="tag red">Survivability: Unknown</span>
-                </div>
+                <h1 id="v-id" class="level-id">Loading...</h1>
+                <h2 id="v-name" class="level-name"></h2>
+                <div class="tags-row" id="v-tags">
+                    </div>
             </div>
         </div>
 
         <div class="information-box">
-            <div class="tabs-container" id="tab-headers">
+            <div class="tabs-container" id="v-tab-headers">
                 </div>
-            <div id="tab-contents-container">
+            <div id="v-tab-contents">
                 </div>
         </div>
     </div>
 
+    <script src="{{ '/main/master-script.js' | relative_url }}"></script>
 
     <script>
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const PAGE_ID = pathParts[pathParts.length - 1] || "level-0";
+
         const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
         const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const PAGE_ID = urlParams.get('id') || 'level-0';
-        document.getElementById('current-id').innerText = PAGE_ID;
+        async function renderLevel() {
+            const { data, error } = await supabaseClient
+                .from('levels')
+                .select('content')
+                .eq('id', PAGE_ID)
+                .single();
 
-        function addNewTab() {
-            const timestamp = Date.now();
-            createTabElements(`Tab ${timestamp}`, `Content for tab...`, timestamp);
-        }
-
-        function createTabElements(name, content, id) {
-            const btn = document.createElement('button');
-            btn.className = 'tab-button';
-            btn.innerText = name;
-            btn.contentEditable = true;
-            document.getElementById('tab-headers').appendChild(btn);
-
-            const div = document.createElement('div');
-            div.className = 'tab-content';
-            div.id = `tab-${id}`;
-            div.innerHTML = content;
-            div.contentEditable = true;
-            document.getElementById('tab-contents-container').appendChild(div);
-        }
-
-        async function saveToSupabase() {
-            const tabButtons = document.querySelectorAll('.tab-button');
-            const tabPanels = document.querySelectorAll('.tab-content');
-            
-            let tabsData = [];
-            tabButtons.forEach((btn, index) => {
-                tabsData.push({
-                    name: btn.innerText,
-                    content: tabPanels[index].innerHTML
-                });
-            });
-
-            const payload = {
-                title: document.getElementById('lvl-id-title').innerText,
-                name: document.getElementById('lvl-name-title').innerText,
-                tagsHtml: document.getElementById('edit-tags').innerHTML,
-                tabs: tabsData
-            };
-
-            const { error } = await supabase.from('levels').upsert({ id: PAGE_ID, content: payload });
-            if (error) alert("Error: " + error.message);
-            else alert("Level Saved!");
-        }
-
-        async function load() {
-            const { data } = await supabase.from('levels').select('content').eq('id', PAGE_ID).single();
-            if (data) {
-                document.getElementById('lvl-id-title').innerText = data.content.title;
-                document.getElementById('lvl-name-title').innerText = data.content.name;
-                document.getElementById('edit-tags').innerHTML = data.content.tagsHtml;
-                data.content.tabs.forEach((t, i) => createTabElements(t.name, t.content, i));
+            if (error || !data) {
+                document.getElementById('v-id').innerText = "Level Not Found";
+                return;
             }
+
+            const c = data.content;
+            
+            document.getElementById('v-id').innerText = c.title;
+            document.getElementById('v-name').innerText = c.name;
+            document.getElementById('v-tags').innerHTML = c.tagsHtml;
+
+            const hContainer = document.getElementById('v-tab-headers');
+            const cContainer = document.getElementById('v-tab-contents');
+
+            c.tabs.forEach((tab, i) => {
+                const isActive = i === 0 ? 'active' : '';
+
+                const btn = document.createElement('button');
+                btn.className = `tab-button ${isActive}`;
+                btn.setAttribute('data-tab', `tab-${i}`);
+                btn.innerText = tab.name;
+                
+                btn.onclick = () => switchTab(`tab-${i}`); 
+                hContainer.appendChild(btn);
+
+                const pane = document.createElement('div');
+                pane.className = `tab-content ${isActive}`;
+                pane.id = `tab-${i}`;
+                pane.innerHTML = tab.content;
+                cContainer.appendChild(pane);
+            });
         }
-        load();
+
+        renderLevel();
     </script>
-    <script src="{{ '/main/master-script.js' | relative_url }}"></script>
 </body>
 </html>

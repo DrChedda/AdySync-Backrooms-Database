@@ -9,7 +9,7 @@ permalink: /main/editor
     <link rel="stylesheet" href="{{ '/main/editor/copy-master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-.editor-top-bar {
+      .editor-top-bar {
         position: fixed;
         top: 0;
         left: 0;
@@ -27,6 +27,46 @@ permalink: /main/editor
       }
 
       body { padding-top: 120px; }
+
+      /* --- HOVER REVEAL SYSTEM --- */
+      .hover-zone {
+        position: relative;
+        border: 1px solid transparent;
+        transition: border 0.3s;
+        padding: 5px; /* Added slight padding to give the border room */
+      }
+      .hover-zone:hover {
+        border: 1px dashed rgba(255, 235, 59, 0.4);
+      }
+
+      .floating-tools {
+        position: absolute;
+        top: -45px; /* Floats just above the element */
+        right: 0;
+        display: flex;
+        gap: 8px;
+        background: rgba(17, 17, 17, 0.95);
+        border: 1px solid #ffeb3b;
+        padding: 5px;
+        z-index: 100;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        align-items: center;
+      }
+      
+      .hover-zone:hover > .floating-tools {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* Adjust tag tools positioning to align left over tags */
+      .tags-hover-zone .floating-tools {
+        right: auto;
+        left: 0;
+      }
+      /* --------------------------- */
 
       #login-overlay {
         position: fixed;
@@ -64,7 +104,10 @@ permalink: /main/editor
         box-shadow: inset 0 0 5px var(--accent-glow);
       }
 
+      /* Adjust input sizes for the tools */
       .editor-top-bar input[type="text"] { padding: 5px; width: 130px; }
+      .floating-tools input[type="text"], .floating-tools select { padding: 5px; width: auto; font-size: 12px; }
+
       input:focus { outline: 2px solid #ffeb3b; }
 
       [contenteditable="true"] {
@@ -111,6 +154,9 @@ permalink: /main/editor
         padding: 5px 10px;
         border: 1px solid #444;
       }
+      /* Remove border/bg for tag tool box when inside floating tools */
+      .floating-tools .tag-tool-box { border: none; background: transparent; padding: 0; }
+
       .id-label { color: #ffeb3b; font-size: 11px; font-weight: 900; font-family: monospace; }
 
       .tab-controls { display: flex; align-items: stretch; flex: 1; }
@@ -152,36 +198,15 @@ permalink: /main/editor
       <button class="auth-btn" style="min-width: 60px; padding: 5px 10px; font-size: 11px;" onclick="window.switchPage()">LOAD</button>
     </div>
 
-    <div class="tag-tool-box">
-      <span class="id-label">NEW_TAG:</span>
-      <input type="text" id="new-tag-text" placeholder="Tag Name..." style="width: 100px;">
-      <select id="tag-color-select">
-        <option value="orange">Orange</option>
-        <option value="yellow">Yellow</option>
-        <option value="red">Red</option>
-        <option value="dark-red">Dark Red</option>
-        <option value="red-orange">Red-Orange</option>
-        <option value="yellow-orange">Yellow-Orange</option>
-        <option value="green-yellow">Green-Yellow</option>
-        <option value="green">Green</option>
-        <option value="dark-green">Dark Green</option>
-        <option value="blue">Blue</option>
-        <option value="dark-blue">Dark Blue</option>
-        <option value="purple">Purple</option>
-        <option value="dark-purple">Dark Purple</option>
-        <option value="pink">Pink</option>
-      </select>
-      <button class="auth-btn" style="padding: 5px 10px; font-size: 11px;" onclick="window.addTag()">ADD</button>
-    </div>
-
     <div class="id-switcher" style="border-color: var(--accent);">
       <span class="id-label" style="color: var(--accent);">IMG_PATH:</span>
       <input type="text" id="img-input" placeholder="level_0.png" style="width: 150px;" oninput="window.updatePreview(this.value)">
     </div>
 
-    <button class="auth-btn blue-btn" onclick="window.createNewTab()">+ NEW TAB</button>
-    <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
-    <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
+    <div style="margin-left: auto; display: flex; gap: 10px;">
+        <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
+        <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
+    </div>
   </div>
 
   <div class="page-wrapper">
@@ -195,16 +220,44 @@ permalink: /main/editor
           <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
         </div>
         
-        <div id="edit-tags" contenteditable="true" class="tags-row">
-           <span class="tag orange" contenteditable="false">Survivability: N/A</span>
-           <span class="tag yellow" contenteditable="false">Generation: Static</span>
+        <div class="hover-zone tags-hover-zone">
+            <div class="floating-tools">
+                <div class="tag-tool-box">
+                  <span class="id-label">NEW_TAG:</span>
+                  <input type="text" id="new-tag-text" placeholder="Tag Name..." style="width: 100px;">
+                  <select id="tag-color-select">
+                    <option value="orange">Orange</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="red">Red</option>
+                    <option value="dark-red">Dark Red</option>
+                    <option value="red-orange">Red-Orange</option>
+                    <option value="yellow-orange">Yellow-Orange</option>
+                    <option value="green-yellow">Green-Yellow</option>
+                    <option value="green">Green</option>
+                    <option value="dark-green">Dark Green</option>
+                    <option value="blue">Blue</option>
+                    <option value="dark-blue">Dark Blue</option>
+                    <option value="purple">Purple</option>
+                    <option value="dark-purple">Dark Purple</option>
+                    <option value="pink">Pink</option>
+                  </select>
+                  <button class="auth-btn" style="padding: 5px 10px; font-size: 11px;" onclick="window.addTag()">ADD</button>
+                </div>
+            </div>
+            <div id="edit-tags" contenteditable="true" class="tags-row">
+               <span class="tag orange" contenteditable="false">Survivability: N/A</span>
+               <span class="tag yellow" contenteditable="false">Generation: Static</span>
+            </div>
         </div>
 
         <div id="edit-stats" contenteditable="true" class="data-box"></div>
       </div>
     </div>
 
-    <div class="information-box">
+    <div class="information-box hover-zone">
+      <div class="floating-tools">
+          <button class="auth-btn blue-btn" style="padding: 5px 10px; font-size: 11px;" onclick="window.createNewTab()">+ NEW TAB</button>
+      </div>
       <div id="tab-headers" class="tabs-container"></div>
       <div id="tab-contents-container"></div>
     </div>

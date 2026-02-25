@@ -179,21 +179,33 @@ permalink: /main/editor
         window.updatePreview = function(val) {
             if (!val) return;
 
+            // Define your base repository path
+            const repoBase = '/AdySync-Backrooms-Database';
             let finalSrc;
+
             if (val.startsWith('http')) {
                 finalSrc = val;
             } else {
-                const cleanPath = val.startsWith('/') ? val : '/' + val;
+                // Remove leading slashes if the user typed them manually
+                const cleanName = val.startsWith('/') ? val.substring(1) : val;
                 
-                if (cleanPath.startsWith('/Images/')) {
-                    finalSrc = cleanPath;
+                // If the user didn't type "Images/", add it automatically
+                if (cleanName.toLowerCase().startsWith('images/')) {
+                    finalSrc = `${repoBase}/${cleanName}`;
                 } else {
-                    finalSrc = '/Images' + cleanPath;
+                    finalSrc = `${repoBase}/Images/${cleanName}`;
                 }
             }
 
-            document.getElementById('active-image').src = finalSrc;
-            console.log("Attempting to load image from:", finalSrc);
+            const imgElement = document.getElementById('active-image');
+            
+            // Add a fallback to placeholder.png if the image fails to load
+            imgElement.onerror = function() {
+                this.src = `${repoBase}/Images/placeholder.png`;
+                this.onerror = null; // Prevent infinite loops
+            };
+
+            imgElement.src = finalSrc;
         };
 
         window.toggleSignup = function() {

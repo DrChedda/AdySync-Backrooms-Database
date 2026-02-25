@@ -141,6 +141,24 @@ permalink: /main/editor
             text-align: center;
             box-shadow: 0 0 40px var(--accent-glow);
         }
+        .tags-row .tag {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .tags-row .tag:hover {
+            filter: brightness(1.1);
+            background: rgba(255, 51, 51, 0.2) !important;
+            border-color: #ff3333 !important;
+            color: #ff3333 !important;
+        }
+
+        .tags-row .tag:hover::after {
+            content: ' ✕';
+            font-size: 10px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body class="article-page">
@@ -320,7 +338,7 @@ window.addTag = function() {
     const color = document.getElementById('tag-color-select').value;
     if (!text) return;
 
-    const tagHtml = `<span class="tag ${color}" contenteditable="false">${text}</span> `;
+    const tagHtml = `<span class="tag ${color}" contenteditable="false" onclick="if(confirm('Remove this tag?')) this.remove()">${text}</span> `;
     document.getElementById('edit-tags').innerHTML += tagHtml;
     document.getElementById('new-tag-text').value = "";
 };
@@ -340,6 +358,12 @@ window.loadData = async function() {
         tagsBox.innerHTML = data.content.tagsHtml || 
             `<span class="tag orange" contenteditable="false">Survivability: N/A</span> <span class="tag yellow" contenteditable="false">Generation: Static</span>`;
 
+        document.querySelectorAll('#edit-tags .tag').forEach(t => {
+            t.onclick = function() {
+                if(confirm('Remove this tag?')) this.remove();
+            };
+        });
+        
         document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
         
         document.getElementById('tab-headers').innerHTML = "";

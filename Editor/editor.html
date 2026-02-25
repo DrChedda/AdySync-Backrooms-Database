@@ -5,14 +5,21 @@ permalink: /main/editor
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Database Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Editor | Sleek Mode</title>
     <link rel="stylesheet" href="{{ '/main/editor/copy-master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* --- EDITOR OVERRIDES & INTEGRATION --- */
         :root {
-            --editor-bg: #111;
-            --editor-border: #ffeb3b; /* Keeping yellow for editor-specific alerts, blue for UI */
+            --edit-gold: #ffeb3b;
+            --edit-gold-glow: rgba(255, 235, 59, 0.3);
+            --panel-bg: rgba(1, 10, 20, 0.98);
+            --top-bar-height: 70px;
+        }
+
+        body.editor-active {
+            padding-top: var(--top-bar-height) !important;
+            user-select: auto; 
         }
 
         .editor-top-bar {
@@ -20,216 +27,191 @@ permalink: /main/editor
             top: 0;
             left: 0;
             width: 100%;
-            height: 70px;
-            background: rgba(17, 17, 17, 0.98);
-            border-bottom: 3px solid var(--editor-border);
+            height: var(--top-bar-height);
+            background: var(--panel-bg);
+            border-bottom: 2px solid var(--edit-gold);
             z-index: 10001;
-            padding: 0 20px;
-            display: none; /* Controlled by JS */
-            gap: 15px;
+            display: none;
             align-items: center;
-            box-sizing: border-box;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            padding: 0 30px;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
         }
 
-        /* Prevent content overlap with the new fixed bar */
-        body.editor-active { 
-            padding-top: 90px !important; 
-        }
-
-        /* --- CLICK-TO-REVEAL SYSTEM --- */
         .hover-zone {
             position: relative;
-            border: 1px solid transparent;
-            transition: all 0.3s;
-            padding: 10px;
+            transition: all 0.3s ease;
             border-radius: 4px;
+            outline: 2px solid transparent;
+            outline-offset: 4px;
         }
 
-        /* Instead of hover, we show tools when the zone or its children are focused/active */
         .hover-zone:focus-within {
-            border: 1px dashed var(--editor-border);
-            background: rgba(255, 235, 59, 0.03);
+            outline: 2px dashed var(--edit-gold);
+            background: rgba(255, 235, 59, 0.02);
         }
 
         .floating-tools {
             position: absolute;
-            top: -45px;
-            right: 10px;
+            bottom: 100%;
+            right: 0;
+            margin-bottom: 10px;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             background: #111;
-            border: 1px solid var(--editor-border);
-            padding: 6px;
-            z-index: 110;
+            border: 1px solid var(--edit-gold);
+            padding: 8px;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.2s, transform 0.2s;
-            transform: translateY(5px);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-            align-items: center;
+            transform: translateY(10px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 100;
         }
 
-        /* Reveal tools when user interacts with the section */
         .hover-zone:focus-within > .floating-tools {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
         }
 
-        .tags-hover-zone .floating-tools {
-            right: auto;
-            left: 0;
+        .editor-input {
+            background: #000;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 6px 12px;
+            font-family: monospace;
+            font-size: 13px;
+            transition: border 0.3s;
         }
 
-        /* --- AUTH & UI ELEMENTS --- */
+        .editor-input:focus {
+            border-color: var(--edit-gold);
+            outline: none;
+        }
+
+        .btn-sleek {
+            background: var(--edit-gold);
+            color: #000;
+            border: none;
+            padding: 6px 15px;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            cursor: pointer;
+            letter-spacing: 1px;
+        }
+
+        .btn-sleek.blue { background: var(--accent); color: #fff; }
+        .btn-sleek.save { background: #00ff66; color: #000; }
+
+        .tab-controls {
+            display: flex;
+            background: rgba(255,255,255,0.05);
+            align-items: center;
+        }
+
+        .del-tab {
+            background: transparent;
+            color: #ff3333;
+            border: none;
+            padding: 0 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .del-tab:hover { background: #ff3333; color: white; }
+
         #login-overlay {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle, #001529 0%, #000 100%);
             z-index: 20000;
+            background: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 15px;
         }
 
-        .auth-container {
-            border: 2px solid var(--accent);
+        .auth-card {
+            width: 350px;
             padding: 40px;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], select {
-            background: #000a14;
+            background: rgba(1, 8, 18, 0.9);
             border: 1px solid var(--accent);
-            color: #00d2ff;
-            padding: 10px;
-            font-family: monospace;
-        }
-
-        .auth-btn {
-            background: var(--editor-border);
-            color: #000;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            font-weight: 800;
-            text-transform: uppercase;
-            transition: filter 0.2s;
-        }
-
-        .auth-btn:hover { filter: brightness(1.2); }
-        .blue-btn { background: var(--accent); color: white; }
-        .save-btn { background: #2ecc71; color: white; }
-
-        /* Fix for tab deletion button */
-        .del-tab {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            cursor: pointer;
-            padding: 0 12px;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .del-tab:hover { background: #ff0000; }
-
-        [contenteditable="true"]:focus {
-            outline: none;
-            background: rgba(0, 153, 255, 0.05);
-            border-bottom: 1px solid var(--accent);
-        }
-
-        /* Tag Tool alignment */
-        .tag-tool-box {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
+            text-align: center;
+            box-shadow: 0 0 40px var(--accent-glow);
         }
     </style>
 </head>
 <body class="article-page">
+
     <div id="login-overlay">
-        <a href="{{ '/main' | relative_url }}" class="back-btn">← RETURN TO DATABASE</a>
-        <div class="auth-container">
-            <h2 id="auth-title" style="color:white; font-family: monospace; margin-top: 0; letter-spacing: 4px;">ACCESS RESTRICTED</h2>
-            <input type="email" id="email-field" placeholder="DB_USER_EMAIL">
-            <input type="password" id="password-field" placeholder="DB_USER_PASS">
-            <div id="signup-extra">
-                <input type="text" id="key-field" placeholder="CREATION_KEY">
+        <div class="auth-card">
+            <h2 style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="email" id="email-field" class="editor-input" placeholder="EMAIL">
+                <input type="password" id="password-field" class="editor-input" placeholder="PASSWORD">
+                <div id="signup-extra" style="display:none">
+                    <input type="text" id="key-field" class="editor-input" placeholder="CREATION_KEY">
+                </div>
+                <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
+                <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
+                <p id="auth-status" style="font-size: 10px; color: var(--edit-gold); font-family: monospace;"></p>
             </div>
-            <div class="btn-row">
-                <button class="auth-btn" id="login-btn" onclick="window.handleAuth('login')">SIGN IN</button>
-                <button class="auth-btn blue-btn" id="signup-btn" onclick="window.toggleSignup()">REGISTER</button>
-            </div>
-            <a id="back-to-login" href="javascript:void(0)" onclick="window.resetAuthUI()" style="display:none; color: #ffeb3b; font-size: 10px; font-family: monospace; margin-top:10px;">BACK TO LOGIN</a>
-            <p id="auth-status" style="color: #ffeb3b; font-size: 12px; font-family: monospace; text-align: center;"></p>
         </div>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
-        <div class="tag-tool-box">
-            <span class="id-label" style="color:var(--editor-border)">TARGET:</span>
-            <input type="text" id="id-input" placeholder="level_0" style="width: 100px;">
-            <button class="auth-btn" style="padding: 5px 10px; font-size: 11px;" onclick="window.switchPage()">LOAD</button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-family: monospace; font-size: 11px; color: var(--edit-gold);">ID_TARGET:</span>
+            <input type="text" id="id-input" class="editor-input" style="width: 100px;">
+            <button class="btn-sleek" onclick="window.switchPage()">LOAD</button>
         </div>
 
-        <div class="tag-tool-box" style="border-left: 1px solid #444; padding-left: 15px;">
-            <span class="id-label" style="color: var(--accent);">IMG_PATH:</span>
-            <input type="text" id="img-input" placeholder="level_0.png" style="width: 180px;" oninput="window.updatePreview(this.value)">
+        <div style="display: flex; align-items: center; gap: 10px; border-left: 1px solid #333; padding-left: 20px;">
+            <span style="font-family: monospace; font-size: 11px; color: var(--accent);">IMG_SRC:</span>
+            <input type="text" id="img-input" class="editor-input" style="width: 250px;" oninput="window.updatePreview(this.value)">
         </div>
 
         <div style="margin-left: auto; display: flex; gap: 10px;">
-            <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
-            <button class="auth-btn" style="background: #333; color: white;" onclick="window.handleLogout()">LOGOUT</button>
+            <button class="btn-sleek save" onclick="window.saveToSupabase()">PUSH TO DATABASE</button>
+            <button class="btn-sleek" style="background: #222; color: #fff;" onclick="window.handleLogout()">LOGOUT</button>
         </div>
     </div>
 
     <div class="page-wrapper">
         <div class="level-header-area">
             <div class="image-box">
-                <img id="active-image" src="" alt="Preview">
+                <img id="active-image" src="" alt="Live Preview">
             </div>
-            <div class="title-container" style="flex: 1;">
+            <div style="flex: 1;">
                 <div class="title-group">
                     <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
                     <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
                 </div>
                 
-                <div class="hover-zone tags-hover-zone" tabindex="0">
+                <div class="hover-zone" style="margin-top: 20px;">
                     <div class="floating-tools">
-                        <div class="tag-tool-box">
-                            <input type="text" id="new-tag-text" placeholder="Tag Text..." style="width: 90px;">
-                            <select id="tag-color-select" style="padding: 4px;">
-                                <option value="orange">Orange</option>
-                                <option value="blue">Blue</option>
-                                <option value="red">Red</option>
-                                <option value="green">Green</option>
-                                <option value="purple">Purple</option>
-                            </select>
-                            <button class="auth-btn" style="padding: 4px 8px; font-size: 10px;" onclick="window.addTag()">+ TAG</button>
+                        <input type="text" id="new-tag-text" class="editor-input" placeholder="Tag Label">
+                        <select id="tag-color-select" class="editor-input">
+                            <option value="orange">Orange</option>
+                            <option value="blue">Blue</option>
+                            <option value="red">Red</option>
+                        </select>
+                        <button class="btn-sleek" onclick="window.addTag()">+ Add</button>
+                    </div>
+                    <div id="edit-tags" contenteditable="true" class="tags-row" style="min-height: 40px; outline: none;">
                         </div>
-                    </div>
-                    <div id="edit-tags" contenteditable="true" class="tags-row">
-                       <span class="tag orange" contenteditable="false">Survivability: N/A</span>
-                    </div>
                 </div>
 
-                <div id="edit-stats" contenteditable="true" class="data-box" tabindex="0"></div>
+                <div id="edit-stats" contenteditable="true" class="data-box" style="margin-top: 20px;">
+                    </div>
             </div>
         </div>
 
-        <div class="information-box hover-zone" tabindex="0">
+        <div class="information-box hover-zone" style="margin-top: 40px;">
             <div class="floating-tools">
-                <button class="auth-btn blue-btn" style="padding: 5px 12px; font-size: 11px;" onclick="window.createNewTab()">+ NEW TAB</button>
+                <button class="btn-sleek blue" onclick="window.createNewTab()">Add Content Tab</button>
             </div>
             <div id="tab-headers" class="tabs-container"></div>
             <div id="tab-contents-container"></div>

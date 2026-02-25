@@ -13,6 +13,7 @@ permalink: /main/editor
         .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; }
         input[type="email"], input[type="password"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
         .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        .secondary-btn { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; margin-top: 5px; }
         [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
         .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; }
         .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; }
@@ -25,8 +26,13 @@ permalink: /main/editor
         <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
         <input type="email" id="email-field" placeholder="Email">
         <input type="password" id="password-field" placeholder="Password">
-        <button class="auth-btn" onclick="window.handleLogin()">SIGN IN</button>
-        <p id="auth-error" style="color: red; font-size: 12px;"></p>
+        
+        <div style="display: flex; gap: 10px;">
+            <button class="auth-btn" onclick="window.handleAuth('login')">SIGN IN</button>
+            <button class="auth-btn" style="background: #0099ff; color: white;" onclick="window.handleAuth('signup')">REGISTER</button>
+        </div>
+        
+        <p id="auth-status" style="color: #ffeb3b; font-size: 13px; text-align: center; max-width: 300px;"></p>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
@@ -55,77 +61,127 @@ permalink: /main/editor
     </div>
 
     <script>
-// 1. Setup Supabase - Changed variable name to 'db' to avoid crashing
-const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
-const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
-const db = window.supabase.createClient(supabaseUrl, supabaseKey);
+        // 1. Setup
+        const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
+        const supabaseKey = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
+        const db = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-const urlParams = new URLSearchParams(window.location.search);
-const PAGE_ID = urlParams.get('id') || 'level-0';
+        const urlParams = new URLSearchParams(window.location.search);
+        const PAGE_ID = urlParams.get('id') || 'level-0';
 
-// 2. Global Functions - Updated to use 'db'
-window.handleLogin = async function() {
-    const email = document.getElementById('email-field').value;
-    const password = document.getElementById('password-field').value;
-    
-    // Using 'db' now, so the browser actually finds the function
-    const { error } = await db.auth.signInWithPassword({ email, password });
-    
-    if (error) {
-        document.getElementById('auth-error').innerText = error.message;
-    } else {
+        // 2. Auth Logic
+        window.handleAuth = async function(mode) {
+            const email = document.getElementById('email-field').value;
+            const password = document.getElementById('password-field').value;
+            const statusBox = document.getElementById('auth-status');
+            
+            statusBox.style.color = "#ffeb3b";
+            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Creating account...";
+
+            if (mode === 'login') {
+                const { error } = await db.auth.signInWithPassword({ email, password });
+                if (error) {
+                    statusBox.style.color = "red";
+                    statusBox.innerText = error.message;
+                } else {
+                    window.checkUser();
+                }
+            } else {
+                const { data, error } = await db.auth.signUp({ email, password });
+                if (error) {
+                    statusBox.style.color = "red";
+                    statusBox.innerText = error.message;
+                } else {
+                    // Supabase sends a session immediately if "Confirm Email" is OFF
+                    if (data.session) {
+                        statusBox.style.color = "#4CAF50";
+                        statusBox.innerText = "Account created! Logging in...";
+                        window.checkUser();
+                    } else {
+                        statusBox.style.color = "#0099ff";
+                        statusBox.innerText = "Signup successful! Please check your email for a confirmation link.";
+                    }
+                }
+            }
+        };
+
+        window.checkUser = async function() {
+            const { data: { user } } = await db.auth.getUser();
+            if (user) {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('editor-ui').style.display = 'flex';
+                window.loadData();
+            }
+        };
+
+        window.handleLogout = async function() {
+            await db.auth.signOut();
+            location.reload();
+        };
+
+        // 3. Editor Logic
+        window.loadData = async function() {
+            const { data } = await db.from('levels').select('content').eq('id', PAGE_ID).single();
+            if (data?.content) {
+                document.getElementById('edit-lvl-id').innerText = data.content.title || "";
+                document.getElementById('edit-lvl-name').innerText = data.content.name || "";
+                document.getElementById('edit-tags').innerHTML = data.content.tagsHtml || "";
+                document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
+                document.getElementById('tab-headers').innerHTML = "";
+                document.getElementById('tab-contents-container').innerHTML = "";
+                data.content.tabs?.forEach(t => window.createNewTab(t.name, t.content));
+            }
+        };
+
+        window.saveToSupabase = async function() {
+            const tabs = [];
+            const buttons = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            buttons.forEach((btn, i) => {
+                tabs.push({ name: btn.innerText, content: contents[i].innerHTML });
+            });
+
+            const payload = {
+                title: document.getElementById('edit-lvl-id').innerText,
+                name: document.getElementById('edit-lvl-name').innerText,
+                tagsHtml: document.getElementById('edit-tags').innerHTML,
+                statsHtml: document.getElementById('edit-stats').innerHTML,
+                tabs: tabs
+            };
+
+            const { error } = await db.from('levels').upsert({ id: PAGE_ID, content: payload });
+            if (error) alert("Error: " + error.message);
+            else alert("Saved Successfully!");
+        };
+
+        window.createNewTab = function(name = "New Tab", content = "Edit content here...") {
+            const id = Date.now();
+            const headerWrap = document.createElement('div');
+            headerWrap.className = 'tab-controls';
+            headerWrap.id = `header-${id}`;
+            headerWrap.innerHTML = `
+                <button class="tab-button active" contenteditable="true">${name}</button>
+                <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>
+            `;
+            document.getElementById('tab-headers').appendChild(headerWrap);
+
+            const contentPane = document.createElement('div');
+            contentPane.className = 'tab-content active';
+            contentPane.id = `content-${id}`;
+            contentPane.contentEditable = "true";
+            contentPane.innerHTML = content;
+            document.getElementById('tab-contents-container').appendChild(contentPane);
+        };
+
+        window.deleteTab = function(id) {
+            document.getElementById(`header-${id}`)?.remove();
+            document.getElementById(`content-${id}`)?.remove();
+        };
+
+        // 4. Init
+        document.getElementById('target-id').innerText = PAGE_ID;
+        document.getElementById('active-image').src = `/Images/${PAGE_ID}.png`;
         window.checkUser();
-    }
-};
-
-window.checkUser = async function() {
-    const { data: { user } } = await db.auth.getUser(); // Use 'db'
-    if (user) {
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('editor-ui').style.display = 'flex';
-        window.loadData();
-    }
-};
-
-window.handleLogout = async function() {
-    await db.auth.signOut(); // Use 'db'
-    location.reload();
-};
-
-window.loadData = async function() {
-    const { data } = await db.from('levels').select('content').eq('id', PAGE_ID).single(); // Use 'db'
-    if (data?.content) {
-        document.getElementById('edit-lvl-id').innerText = data.content.title;
-        document.getElementById('edit-lvl-name').innerText = data.content.name;
-        document.getElementById('edit-tags').innerHTML = data.content.tagsHtml;
-        document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
-        document.getElementById('tab-headers').innerHTML = "";
-        document.getElementById('tab-contents-container').innerHTML = "";
-        data.content.tabs?.forEach(t => window.createNewTab(t.name, t.content));
-    }
-};
-
-window.saveToSupabase = async function() {
-    const tabs = [];
-    document.querySelectorAll('.tab-button').forEach((btn, i) => {
-        tabs.push({ 
-            name: btn.innerText, 
-            content: document.querySelectorAll('.tab-content')[i].innerHTML 
-        });
-    });
-
-    const payload = {
-        title: document.getElementById('edit-lvl-id').innerText,
-        name: document.getElementById('edit-lvl-name').innerText,
-        tagsHtml: document.getElementById('edit-tags').innerHTML,
-        statsHtml: document.getElementById('edit-stats').innerHTML,
-        tabs: tabs
-    };
-
-    const { error } = await db.from('levels').upsert({ id: PAGE_ID, content: payload }); // Use 'db'
-    if (error) alert("Error: " + error.message);
-    else alert("Saved Successfully!");
-};
     </script>
 </body>
 </html>

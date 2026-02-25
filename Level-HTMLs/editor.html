@@ -10,9 +10,16 @@ permalink: /main/editor
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
-        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; }
+        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; }
         input[type="email"], input[type="password"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
         .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        
+        /* Edit Mode Styles */
+        [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
+        [contenteditable="true"]:hover { border-color: #ffeb3b; }
+        .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; overflow: hidden; }
+        .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; font-size: 10px; }
+        
         body { padding-top: 80px; }
     </style>
 </head>
@@ -27,13 +34,42 @@ permalink: /main/editor
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
-        <div style="color: #ffeb3b;">TARGET: <span id="target-id"></span></div>
+        <div style="color: #ffeb3b; font-family: monospace; margin-right: 10px;">ID: <span id="target-id"></span></div>
+        <button class="auth-btn" style="background: #0099ff; color: white;" onclick="createNewTab()">+ NEW TAB</button>
         <button class="auth-btn" style="background: #4CAF50; color: white;" onclick="saveToSupabase()">PUSH CHANGES</button>
         <button class="auth-btn" style="background: #444; color: white;" onclick="supabase.auth.signOut().then(() => location.reload())">LOGOUT</button>
     </div>
 
     <div class="page-wrapper">
+        <div class="level-header-area">
+            <div class="image-box">
+                <img id="active-image" src="" alt="Level View">
+            </div>
+
+            <div class="title-container">
+                <div class="title-group">
+                    <h1 class="level-id" id="edit-lvl-id" contenteditable="true">Level ID</h1>
+                    <h2 class="level-name" id="edit-lvl-name" contenteditable="true">"Level Name"</h2>
+                </div>
+
+                <div class="tags-row" id="edit-tags" contenteditable="true">
+                    <span class="tag red">Survivability: Unknown</span>
+                </div>
+
+                <div class="data-box" id="edit-stats" contenteditable="true">
+                    <div class="data-item"><strong>HABITABILITY:</strong> 0%</div>
+                    <div class="data-item"><strong>SIZE:</strong> Unknown</div>
+                </div>
+            </div>
         </div>
+
+        <div class="information-box">
+            <div class="tabs-container" id="tab-headers">
+                </div>
+            <div id="tab-contents-container">
+                </div>
+        </div>
+    </div>
 
     <script>
         const supabaseUrl = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
@@ -42,12 +78,16 @@ permalink: /main/editor
 
         const urlParams = new URLSearchParams(window.location.search);
         const PAGE_ID = urlParams.get('id') || 'level-0';
+        document.getElementById('target-id').innerText = PAGE_ID;
+
+        // Set Image Path dynamically (Level-0 -> Images/Level_0.png)
+        const imgPath = `/Images/${PAGE_ID.replace('-', '_')}.png`;
+        document.getElementById('active-image').src = imgPath;
 
         async function handleLogin() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const { error } = await supabase.auth.signInWithPassword({ email, password });
-            
             if (error) {
                 document.getElementById('auth-error').innerText = error.message;
             } else {
@@ -64,10 +104,70 @@ permalink: /main/editor
             }
         }
 
+        function createNewTab(name = "New Tab", content = "<p>Tab Content Here</p>") {
+            const id = Date.now();
+            
+            // Header Button
+            const tabHeader = document.createElement('div');
+            tabHeader.className = 'tab-controls';
+            tabHeader.id = `header-${id}`;
+            tabHeader.innerHTML = `
+                <button class="tab-button active" contenteditable="true">${name}</button>
+                <button class="del-tab" onclick="deleteTab('${id}')">✕</button>
+            `;
+            document.getElementById('tab-headers').appendChild(tabHeader);
+
+            // Content Panel
+            const tabContent = document.createElement('div');
+            tabContent.className = 'tab-content active';
+            tabContent.id = `content-${id}`;
+            tabContent.contentEditable = "true";
+            tabContent.innerHTML = content;
+            document.getElementById('tab-contents-container').appendChild(tabContent);
+        }
+
+        function deleteTab(id) {
+            document.getElementById(`header-${id}`).remove();
+            document.getElementById(`content-${id}`).remove();
+        }
+
+        async function loadData() {
+            const { data, error } = await supabase.from('levels').select('content').eq('id', PAGE_ID).single();
+            if (data) {
+                document.getElementById('edit-lvl-id').innerText = data.content.title || PAGE_ID;
+                document.getElementById('edit-lvl-name').innerText = data.content.name || "";
+                document.getElementById('edit-tags').innerHTML = data.content.tagsHtml || "";
+                document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
+                
+                document.getElementById('tab-headers').innerHTML = "";
+                document.getElementById('tab-contents-container').innerHTML = "";
+                
+                if (data.content.tabs) {
+                    data.content.tabs.forEach(t => createNewTab(t.name, t.content));
+                }
+            }
+        }
+
         async function saveToSupabase() {
+            const tabData = [];
+            const headers = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+            
+            headers.forEach((h, i) => {
+                tabData.push({ name: h.innerText, content: contents[i].innerHTML });
+            });
+
+            const payload = {
+                title: document.getElementById('edit-lvl-id').innerText,
+                name: document.getElementById('edit-lvl-name').innerText,
+                tagsHtml: document.getElementById('edit-tags').innerHTML,
+                statsHtml: document.getElementById('edit-stats').innerHTML,
+                tabs: tabData
+            };
+
             const { error } = await supabase.from('levels').upsert({ id: PAGE_ID, content: payload });
-            if (error) alert("Unauthorized: Only editors can save.");
-            else alert("Changes Pushed!");
+            if (error) alert("Save Failed: " + error.message);
+            else alert("Database Updated!");
         }
 
         checkUser();

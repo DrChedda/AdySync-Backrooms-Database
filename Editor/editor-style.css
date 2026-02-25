@@ -137,22 +137,26 @@ body.editor-active {
 }
 
 .tags-row .tag {
-	cursor: pointer;
-	transition: all 0.2s ease;
-	position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 4px 10px;
+    display: inline-block;
 }
 
 .tags-row .tag:hover {
-	filter: brightness(1.1);
-	background: rgba(255, 51, 51, 0.2) !important;
-	border-color: #ff3333 !important;
-	color: #ff3333 !important;
+    filter: brightness(1.1);
+    background: rgba(255, 51, 51, 0.2) !important;
+    border-color: #ff3333 !important;
+    color: #ff3333 !important;
 }
 
 .tags-row .tag:hover::after {
-	content: ' ✕';
-	font-size: 10px;
-	vertical-align: middle;
+    content: ' ✕';
+    font-size: 10px;
+    vertical-align: middle;
 }
 
 .tab-controls {

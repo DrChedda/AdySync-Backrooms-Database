@@ -11,31 +11,38 @@ permalink: /main/editor
     <style>
         #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
         .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; }
-        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; }
-        .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 250px; transition: all 0.3s ease; }
+        .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; min-width: 120px; }
         .secondary-btn { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; margin-top: 5px; }
         [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
         .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; }
         .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; }
         body { padding-top: 80px; }
-        /* Style for the secret key field specifically */
-        #key-field { border-color: #0099ff; margin-bottom: 5px; }
+        
+        /* Key field styling */
+        #signup-extra { display: none; flex-direction: column; gap: 10px; }
+        #key-field { border-color: #0099ff; }
     </style>
 </head>
 <body class="article-page">
 
     <div id="login-overlay">
         <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
+        
         <input type="email" id="email-field" placeholder="Email">
         <input type="password" id="password-field" placeholder="Password">
-        <input type="text" id="key-field" placeholder="Creation Key (Required for Register)">
+        
+        <div id="signup-extra">
+            <input type="text" id="key-field" placeholder="Creation Key (Required)">
+        </div>
         
         <div style="display: flex; gap: 10px;">
-            <button class="auth-btn" onclick="window.handleAuth('login')">SIGN IN</button>
-            <button class="auth-btn" style="background: #0099ff; color: white;" onclick="window.handleAuth('signup')">REGISTER</button>
+            <button class="auth-btn" id="login-btn" onclick="window.handleAuth('login')">SIGN IN</button>
+            <button class="auth-btn" id="signup-btn" style="background: #0099ff; color: white;" onclick="window.toggleSignup()">REGISTER</button>
         </div>
         
         <p id="auth-status" style="color: #ffeb3b; font-size: 13px; text-align: center; max-width: 300px;"></p>
+        <button id="back-to-login" class="secondary-btn" style="display:none;" onclick="location.reload()">← Back to Login</button>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
@@ -72,7 +79,24 @@ permalink: /main/editor
         const urlParams = new URLSearchParams(window.location.search);
         const PAGE_ID = urlParams.get('id') || 'level-0';
 
-        // 2. Auth Logic
+        // 2. UI Toggles
+        window.toggleSignup = function() {
+            const extra = document.getElementById('signup-extra');
+            const loginBtn = document.getElementById('login-btn');
+            const signupBtn = document.getElementById('signup-btn');
+            const backBtn = document.getElementById('back-to-login');
+
+            if (extra.style.display === 'none' || extra.style.display === '') {
+                extra.style.display = 'flex';
+                loginBtn.style.display = 'none';
+                backBtn.style.display = 'block';
+                signupBtn.innerText = "CONFIRM REGISTRATION";
+            } else {
+                window.handleAuth('signup');
+            }
+        };
+
+        // 3. Auth Logic
         window.handleAuth = async function(mode) {
             const email = document.getElementById('email-field').value;
             const password = document.getElementById('password-field').value;
@@ -80,7 +104,7 @@ permalink: /main/editor
             const statusBox = document.getElementById('auth-status');
             
             statusBox.style.color = "#ffeb3b";
-            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Creating account...";
+            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Validating key & creating account...";
 
             if (mode === 'login') {
                 const { error } = await db.auth.signInWithPassword({ email, password });
@@ -91,33 +115,28 @@ permalink: /main/editor
                     window.checkUser();
                 }
             } else {
-                // SIGNUP: Pass the key into options.data so the SQL trigger can see it
                 const { data, error } = await db.auth.signUp({ 
                     email, 
                     password,
-                    options: {
-                        data: { creation_key: creationKey }
-                    }
+                    options: { data: { creation_key: creationKey } }
                 });
 
                 if (error) {
                     statusBox.style.color = "red";
-                    // If the SQL trigger fails, the error message will appear here
                     statusBox.innerText = error.message;
                 } else {
                     if (data.session) {
                         statusBox.style.color = "#4CAF50";
-                        statusBox.innerText = "Account created! Logging in...";
+                        statusBox.innerText = "Success! Access granted.";
                         window.checkUser();
                     } else {
                         statusBox.style.color = "#0099ff";
-                        statusBox.innerText = "Signup successful! Please check your email for a confirmation link.";
+                        statusBox.innerText = "Account created! Please check your email.";
                     }
                 }
             }
         };
 
-        // ... Keep all other functions (checkUser, handleLogout, loadData, saveToSupabase, etc) exactly as they were ...
         window.checkUser = async function() {
             const { data: { user } } = await db.auth.getUser();
             if (user) {
@@ -132,6 +151,7 @@ permalink: /main/editor
             location.reload();
         };
 
+        // 4. Editor Logic
         window.loadData = async function() {
             const { data } = await db.from('levels').select('content').eq('id', PAGE_ID).single();
             if (data?.content) {

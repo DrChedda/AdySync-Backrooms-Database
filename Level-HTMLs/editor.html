@@ -1,0 +1,74 @@
+---
+permalink: /main/editor/
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor | Backrooms Database</title>
+    <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/main/editor-style.css' | relative_url }}">
+    <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
+</head>
+<body class="article-page">
+
+    <nav id="top-nav">
+        <a href="{{ '/main' | relative_url }}" class="nav-btn">← EXIT EDITOR</a>
+        <div class="nav-title">[Database Command Console]</div>
+    </nav>
+
+    <div class="page-wrapper">
+        
+        <div id="auth-box" class="auth-container">
+            <h1 class="level-id" style="font-size: 24px; margin-bottom: 20px;" id="auth-title">ACCESS LOGIN</h1>
+            <input type="email" id="email" placeholder="Email Address">
+            <input type="password" id="password" placeholder="Access Code">
+            
+            <div id="signup-fields" class="hidden">
+                <input type="text" id="username" placeholder="Display Name">
+                <input type="text" id="invite-key" placeholder="System Invite Key">
+            </div>
+
+            <button class="nav-btn" style="width: 100%; margin-top: 15px;" id="primary-btn" onclick="handleAuth()">ENTER</button>
+            <p style="text-align: center; margin-top: 20px;">
+                <a href="#" onclick="toggleAuthMode()" class="breadcrumb-link">Request Access</a>
+            </p>
+        </div>
+
+        <div id="editor-interface" class="information-box hidden">
+            <div id="level-sidebar">
+                <div class="section-label" style="font-size: 12px;">Existing Nodes:</div>
+                <div id="lvl-list-container">Loading...</div>
+            </div>
+
+            <div class="title-group">
+                <h1 class="level-id" style="font-size: 32px;">Terminal: <span id="user-display"></span></h1>
+                <button class="nav-btn" style="background:#ff3333;" onclick="supabase.auth.signOut().then(() => location.reload())">LOGOUT</button>
+            </div>
+
+            <div class="editor-section">
+                <div class="section-label">Core Identity</div>
+                <div class="form-grid">
+                    <input type="hidden" id="lvl-db-id"> <input type="text" id="lvl-slug" placeholder="Slug (level-0)">
+                    <input type="text" id="lvl-title" placeholder="Title (Level 0)">
+                    <input type="text" id="lvl-subtitle" placeholder="Subtitle">
+                    <input type="text" id="lvl-thumb" placeholder="GitHub Image Path">
+                    <input type="color" id="lvl-color" value="#0099ff">
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <div class="section-label">Data Nodes</div>
+                <div id="content-entries-container"></div>
+                <button class="nav-btn" onclick="addContentEntry()">+ ADD NODE</button>
+            </div>
+
+            <button id="save-btn" class="nav-btn save-btn" onclick="saveFullLevel()">UPLOAD TO DATABASE</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="{{ '/main/master-script.js' | relative_url }}"></script>
+</body>
+</html>

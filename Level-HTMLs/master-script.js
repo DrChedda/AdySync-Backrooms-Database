@@ -12,9 +12,8 @@ const levelSlug = urlParams.get('id') || 'level-0';
 let searchTimeout;
 let isSignUp = false;
 
-// 2. PUBLIC VIEW LOGIC (Level Data Loading)
+// 2. PUBLIC VIEW LOGIC
 async function loadLevelData() {
-    // Only run if we are on a level page (identified by the display-id element)
     if (!document.getElementById('display-id')) return;
 
     const { data: level, error } = await supabase
@@ -35,11 +34,9 @@ async function loadLevelData() {
 }
 
 function renderPage(level, content) {
-    document.getElementById('page-title').innerText = `${level.display_title} | Database`;
     document.getElementById('display-id').innerText = level.display_title;
     document.getElementById('display-name').innerText = `"${level.subtitle}"`;
     
-    // Dynamic image path handling
     const imgElement = document.getElementById('level-image');
     if (imgElement) {
         imgElement.src = level.thumbnail_path.startsWith('http') 
@@ -47,14 +44,21 @@ function renderPage(level, content) {
             : `https://raw.githubusercontent.com/User/Repo/main/${level.thumbnail_path}`;
     }
     
-    // Stats update
     if(document.getElementById('stat-habitability')) document.getElementById('stat-habitability').innerText = level.habitability;
     if(document.getElementById('stat-size')) document.getElementById('stat-size').innerText = level.size_description;
 
+    // Render Dynamic Tags
+    const tagsRow = document.querySelector('.tags-row');
+    if (tagsRow && level.custom_tags) {
+        tagsRow.innerHTML = level.custom_tags.map(tag => 
+            `<span class="tag" style="background: ${tag.color}">${tag.label}: ${tag.value}</span>`
+        ).join('');
+    }
+
     const infoTab = document.getElementById('info-tab');
     const landmarkTab = document.getElementById('Landmarks-tab');
-    
-    if (infoTab) infoTab.innerHTML = ''; // Clear placeholders
+    if (infoTab) infoTab.innerHTML = '';
+    if (landmarkTab) landmarkTab.innerHTML = '';
     
     content.forEach(item => {
         const html = `
@@ -69,7 +73,7 @@ function renderPage(level, content) {
     });
 }
 
-// 3. EDITOR AUTHENTICATION LOGIC
+// 3. EDITOR AUTHENTICATION
 function toggleAuthMode() {
     isSignUp = !isSignUp;
     document.getElementById('auth-title').innerText = isSignUp ? "Create Editor Account" : "Editor Login";
@@ -84,28 +88,15 @@ async function handleAuth() {
     if (isSignUp) {
         const username = document.getElementById('username').value;
         const enteredKey = document.getElementById('invite-key').value;
+        const { data: secret } = await supabase.from('secrets').select('key_value').eq('key_name', 'invite_code').single();
 
-        const { data: secret } = await supabase
-            .from('secrets')
-            .select('key_value')
-            .eq('key_name', 'invite_code')
-            .single();
+        if (enteredKey !== secret?.key_value) { alert("Invalid Key!"); return; }
 
-        if (enteredKey !== secret?.key_value) {
-            alert("Invalid Invitation Key!");
-            return;
-        }
-
-        const { data, error } = await supabase.auth.signUp({
-            email, password,
-            options: { data: { username: username } }
-        });
-        if (error) alert(error.message);
-        else alert("Signup successful! Check email or login.");
+        const { error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
+        if (error) alert(error.message); else alert("Signup successful!");
     } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) alert(error.message);
-        else checkUserSession();
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) alert(error.message); else checkUserSession();
     }
 }
 
@@ -117,92 +108,120 @@ async function checkUserSession() {
     if (user && editorUi) {
         authBox?.classList.add('hidden');
         editorUi.classList.remove('hidden');
-        document.getElementById('user-display').innerText = user.user_metadata.username || user.email;
         fetchLevelList();
     }
 }
 
-// 4. EDITOR DATA MANAGEMENT
-async function fetchLevelList() {
-    const container = document.getElementById('lvl-list-container');
-    if (!container) return;
+// 4. EDITOR CORE LOGIC
+function updatePreview() {
+    if (!document.getElementById('editor-interface')) return;
 
-    const { data } = await supabase.from('levels').select('display_title, level_id_slug');
-    if (data) {
-        container.innerHTML = `<div class="section-label">Existing Entries:</div>` + data.map(l => 
-            `<span class="lvl-item" onclick="loadLevelIntoEditor('${l.level_id_slug}')">${l.display_title}</span>`
-        ).join('');
-    }
+    // Basic Info
+    document.getElementById('prev-title').innerText = document.getElementById('lvl-title').value || "Level ID";
+    document.getElementById('prev-subtitle').innerText = `"${document.getElementById('lvl-subtitle').value || "Subtitle"}"`;
+    document.getElementById('prev-habit').innerText = document.getElementById('lvl-habit').value || "...";
+    document.getElementById('prev-size').innerText = document.getElementById('lvl-size').value || "...";
+    document.getElementById('prev-img').src = document.getElementById('lvl-thumb').value || "";
+
+    // Tags
+    const tagsPrev = document.getElementById('prev-tags');
+    tagsPrev.innerHTML = '';
+    document.querySelectorAll('.tag-builder-row').forEach(row => {
+        const l = row.querySelector('.tag-label').value;
+        const v = row.querySelector('.tag-value').value;
+        const c = row.querySelector('.tag-color').value;
+        if(l || v) tagsPrev.innerHTML += `<span class="tag" style="background:${c}">${l}: ${v}</span>`;
+    });
+
+    // Content
+    const infoPrev = document.getElementById('prev-info-content');
+    const landPrev = document.getElementById('prev-landmark-content');
+    infoPrev.innerHTML = ''; landPrev.innerHTML = '';
+
+    document.querySelectorAll('.content-entry-card').forEach(card => {
+        const t = card.querySelector('.entry-title').value;
+        const d = card.querySelector('.entry-desc').value;
+        const tab = card.querySelector('.entry-tab').value;
+        const html = `<div class="description-text"><h3>${t}</h3><p>${d}</p></div>`;
+        if(tab === 'info-tab') infoPrev.innerHTML += html; else landPrev.innerHTML += html;
+    });
+}
+
+function addDynamicTag(data = { label: '', value: '', color: '#ff3333' }) {
+    const container = document.getElementById('dynamic-tags-container');
+    const div = document.createElement('div');
+    div.className = 'tag-builder-row';
+    div.innerHTML = `
+        <input type="text" class="tag-label" placeholder="Label" value="${data.label}" oninput="updatePreview()">
+        <input type="text" class="tag-value" placeholder="Value" value="${data.value}" oninput="updatePreview()">
+        <input type="color" class="tag-color" value="${data.color}" style="width:50px;" oninput="updatePreview()">
+        <button onclick="this.parentElement.remove(); updatePreview();" style="background:none; border:none; color:red; cursor:pointer;">✖</button>
+    `;
+    container.appendChild(div);
+    updatePreview();
 }
 
 function addContentEntry(data = {}) {
     const container = document.getElementById('content-entries-container');
-    const entryId = Date.now() + Math.random();
-    
     const entryHtml = `
-        <div class="content-entry-card" id="entry-${entryId}" style="border: 1px solid #222; padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.02);">
-            <div class="entry-header" style="display:flex; justify-content: space-between; margin-bottom: 10px;">
-                <select class="entry-tab" onchange="if(typeof runPreview === 'function') runPreview()">
-                    <option value="info-tab" ${data.tab_type === 'info-tab' ? 'selected' : ''}>Information Tab</option>
-                    <option value="Landmarks-tab" ${data.tab_type === 'Landmarks-tab' ? 'selected' : ''}>Landmarks Tab</option>
-                </select>
-                <button class="nav-btn" style="background:#ff3333; padding: 2px 10px;" onclick="this.closest('.content-entry-card').remove(); if(typeof runPreview === 'function') runPreview();">REMOVE</button>
-            </div>
-            <input type="text" class="entry-title" placeholder="Node Title" value="${data.title || ''}" oninput="if(typeof runPreview === 'function') runPreview()">
-            <textarea class="entry-desc" placeholder="Description content..." oninput="if(typeof runPreview === 'function') runPreview()">${data.description || ''}</textarea>
-            <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <input type="text" class="entry-coords" placeholder="Coordinates (Optional)" value="${data.coordinates || ''}">
-                <input type="text" class="entry-dist" placeholder="Distance (Optional)" value="${data.distance || ''}">
-            </div>
+        <div class="content-entry-card" style="border: 1px solid #222; padding: 15px; margin-bottom: 10px; background: rgba(255,255,255,0.02);">
+            <select class="entry-tab" onchange="updatePreview()">
+                <option value="info-tab" ${data.tab_type === 'info-tab' ? 'selected' : ''}>Information</option>
+                <option value="Landmarks-tab" ${data.tab_type === 'Landmarks-tab' ? 'selected' : ''}>Landmarks</option>
+            </select>
+            <input type="text" class="entry-title" placeholder="Title" value="${data.title || ''}" oninput="updatePreview()">
+            <textarea class="entry-desc" placeholder="Content" oninput="updatePreview()">${data.description || ''}</textarea>
+            <button class="nav-btn" style="background:red;" onclick="this.closest('.content-entry-card').remove(); updatePreview();">REMOVE</button>
         </div>
     `;
     container.insertAdjacentHTML('beforeend', entryHtml);
+    updatePreview();
 }
 
 async function saveFullLevel() {
     const saveBtn = document.getElementById('save-btn');
-    saveBtn.innerText = "SYNCHRONIZING...";
-    saveBtn.disabled = true;
+    saveBtn.innerText = "SAVING...";
+    
+    const customTags = Array.from(document.querySelectorAll('.tag-builder-row')).map(row => ({
+        label: row.querySelector('.tag-label').value,
+        value: row.querySelector('.tag-value').value,
+        color: row.querySelector('.tag-color').value
+    }));
 
     const levelData = {
         level_id_slug: document.getElementById('lvl-slug').value,
         display_title: document.getElementById('lvl-title').value,
         subtitle: document.getElementById('lvl-subtitle').value,
         thumbnail_path: document.getElementById('lvl-thumb').value,
-        theme_color: document.getElementById('lvl-color').value,
         habitability: document.getElementById('lvl-habit').value,
         size_description: document.getElementById('lvl-size').value,
-        survivability: document.getElementById('lvl-survive').value,
-        generation: document.getElementById('lvl-gen').value,
-        mold_presence: document.getElementById('lvl-mold').value
+        custom_tags: customTags
     };
 
     const { data: newLvl, error: lvlErr } = await supabase.from('levels').upsert(levelData).select().single();
 
-    if (lvlErr) {
-        alert("Upload Error: " + lvlErr.message);
-    } else {
-        const entryCards = document.querySelectorAll('.content-entry-card');
-        const entries = Array.from(entryCards).map((card, index) => ({
+    if (!lvlErr) {
+        const entries = Array.from(document.querySelectorAll('.content-entry-card')).map((card, index) => ({
             level_id: newLvl.id,
             tab_type: card.querySelector('.entry-tab').value,
             title: card.querySelector('.entry-title').value,
             description: card.querySelector('.entry-desc').value,
-            coordinates: card.querySelector('.entry-coords').value,
-            distance: card.querySelector('.entry-dist').value,
             sort_order: index
         }));
-
         await supabase.from('level_content').delete().eq('level_id', newLvl.id);
-        const { error: contentErr } = await supabase.from('level_content').insert(entries);
-        
-        if (contentErr) alert("Content Save Error: " + contentErr.message);
-        else alert("Database Update Complete.");
+        await supabase.from('level_content').insert(entries);
+        alert("Database Updated.");
     }
-
     saveBtn.innerText = "UPLOAD TO DATABASE";
-    saveBtn.disabled = false;
     fetchLevelList();
+}
+
+async function fetchLevelList() {
+    const { data } = await supabase.from('levels').select('display_title, level_id_slug');
+    const container = document.getElementById('lvl-list-container');
+    if (container && data) {
+        container.innerHTML = data.map(l => `<span class="lvl-item" onclick="loadLevelIntoEditor('${l.level_id_slug}')">${l.display_title}</span>`).join('');
+    }
 }
 
 async function loadLevelIntoEditor(slug) {
@@ -213,97 +232,29 @@ async function loadLevelIntoEditor(slug) {
     document.getElementById('lvl-title').value = level.display_title;
     document.getElementById('lvl-subtitle').value = level.subtitle;
     document.getElementById('lvl-thumb').value = level.thumbnail_path;
-    document.getElementById('lvl-color').value = level.theme_color || "#0099ff";
     document.getElementById('lvl-habit').value = level.habitability;
     document.getElementById('lvl-size').value = level.size_description;
-    document.getElementById('lvl-survive').value = level.survivability;
-    document.getElementById('lvl-gen').value = level.generation;
-    document.getElementById('lvl-mold').value = level.mold_presence;
+
+    document.getElementById('dynamic-tags-container').innerHTML = '';
+    level.custom_tags?.forEach(t => addDynamicTag(t));
 
     const { data: content } = await supabase.from('level_content').select('*').eq('level_id', level.id).order('sort_order', { ascending: true });
     document.getElementById('content-entries-container').innerHTML = '';
     content?.forEach(c => addContentEntry(c));
-    
-    // Trigger preview if the function exists in the HTML
-    if (typeof runPreview === 'function') runPreview();
+    updatePreview();
 }
 
-// 5. UTILITY & TAB LOGIC
-function switchTab(tabName) {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    const tabContents = document.querySelectorAll('.tab-content');
-    tabButtons.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName));
-    tabContents.forEach(content => content.classList.toggle('active', content.id === tabName));
-}
-
-function searchText() {
-    const box = document.getElementById('search-box');
-    const query = box.value.trim();
-    const activeContent = document.querySelector('.tab-content.active');
-    if (!activeContent) return;
-
-    const prevHighlights = activeContent.querySelectorAll('.highlight');
-    prevHighlights.forEach(span => {
-        const parent = span.parentNode;
-        parent.replaceChild(document.createTextNode(span.textContent), span);
-        parent.normalize();
-    });
-
-    if (!query) return;
-
-    const walker = document.createTreeWalker(activeContent, NodeFilter.SHOW_TEXT, null, false);
-    const nodesToReplace = [];
-    const regex = new RegExp(`(${query})`, 'gi');
-
-    let currentNode;
-    while (currentNode = walker.nextNode()) {
-        if (currentNode.textContent.match(regex)) nodesToReplace.push(currentNode);
-    }
-
-    if (nodesToReplace.length > 0) {
-        nodesToReplace.forEach(node => {
-            const span = document.createElement('span');
-            span.innerHTML = node.textContent.replace(regex, '<span class="highlight">$1</span>');
-            node.parentNode.replaceChild(span, node);
-        });
-        activeContent.querySelector('.highlight')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        box.style.borderColor = "#00ff00";
-    } else {
-        box.style.borderColor = "#ff3333";
-        setTimeout(() => { box.style.borderColor = "#0099ff"; }, 500);
-    }
-}
-
-// INITIALIZATION
+// 5. INITIALIZATION
 window.onload = () => {
     loadLevelData();
-    if (window.location.pathname.includes('editor')) {
-        checkUserSession();
-    }
+    if (window.location.pathname.includes('editor')) checkUserSession();
 };
 
-document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => switchTab(button.dataset.tab));
-});
-
-document.getElementById('search-box')?.addEventListener('input', () => {
-    clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(searchText, 300); 
-});
-
-// Side-tab Logic
-(function(){
-    document.querySelectorAll('.tab-side-wrap').forEach(function(wrap){
-        var tabs = wrap.querySelectorAll('.side-tab');
-        var panels = wrap.querySelectorAll('.side-panel');
-        tabs.forEach(function(tab){
-            tab.addEventListener('click', function(){
-                tabs.forEach(function(t){ t.classList.remove('active'); });
-                panels.forEach(function(p){ p.classList.remove('active'); });
-                tab.classList.add('active');
-                var panel = wrap.querySelector('#' + tab.getAttribute('data-target'));
-                if(panel) panel.classList.add('active');
-            });
-        });
+document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab || (btn.innerText === 'Information' ? 'prev-info-content' : 'prev-landmark-content'))?.classList.add('active');
     });
-})();
+});

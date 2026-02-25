@@ -18,13 +18,18 @@ permalink: /main/editor/
         label { display: block; font-size: 11px; color: var(--accent); text-transform: uppercase; margin-bottom: 5px; }
         input, textarea, select { 
             width: 100%; background: #001529; border: 1px solid var(--accent); 
-            color: #00d2ff; padding: 8px; box-sizing: border-box; font-family: inherit; 
+            color: #00d2ff; padding: 8px; box-sizing: border-box; font-family: inherit; margin-bottom: 10px;
         }
-        .content-card { background: rgba(255,255,255,0.05); padding: 10px; margin-top: 10px; border-left: 3px solid var(--accent); }
+        .tag-builder-row { 
+            display: flex; gap: 5px; background: rgba(255,255,255,0.05); 
+            padding: 10px; margin-bottom: 5px; border-radius: 4px; align-items: center;
+        }
+        .tag-builder-row input { margin-bottom: 0; }
         .save-btn { background: #00ff66 !important; color: #000 !important; font-weight: 900; width: 100%; margin-top: 20px; }
         .hidden { display: none; }
-        
         .preview-label { position: absolute; top: 10px; right: 10px; font-size: 10px; color: #555; z-index: 10; pointer-events: none; }
+        .lvl-item { display: block; padding: 8px; border: 1px solid #333; margin-bottom: 5px; cursor: pointer; transition: 0.2s; }
+        .lvl-item:hover { background: var(--accent); color: #000; }
     </style>
 </head>
 <body class="article-page">
@@ -34,8 +39,8 @@ permalink: /main/editor/
   <div class="nav-title">[DATABASE EDITOR CONSOLE]</div>
 </nav>
 
-<div id="auth-box" class="page-wrapper" style="max-width: 400px; margin: auto;">
-    <h1 class="level-id" style="font-size: 24px;">TERMINAL LOGIN</h1>
+<div id="auth-box" class="page-wrapper" style="max-width: 400px; margin: auto; padding-top: 100px;">
+    <h1 class="level-id" id="auth-title" style="font-size: 24px;">TERMINAL LOGIN</h1>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
     <div id="signup-fields" class="hidden">
@@ -49,26 +54,27 @@ permalink: /main/editor/
 <div id="editor-interface" class="editor-container hidden">
     
     <div class="editor-controls">
+        <label>Cloud Database</label>
         <div id="lvl-list-container" style="margin-bottom: 20px;"></div>
         
         <div class="field-group">
-            <label>Slug (URL ID)</label>
-            <input type="text" id="lvl-slug" placeholder="level-0-5" oninput="updatePreview()">
-            <label>Title</label>
-            <input type="text" id="lvl-title" placeholder="Level 0.5" oninput="updatePreview()">
-            <label>Subtitle</label>
-            <input type="text" id="lvl-subtitle" placeholder="Old Orange Halls" oninput="updatePreview()">
-            <label>Thumbnail Path</label>
-            <input type="text" id="lvl-thumb" placeholder="/Images/placeholder.png" oninput="updatePreview()">
+            <label>Core Identity</label>
+            <input type="text" id="lvl-slug" placeholder="level-0-5 (URL ID)">
+            <input type="text" id="lvl-title" placeholder="Level 0.5">
+            <input type="text" id="lvl-subtitle" placeholder='"The Orange Halls"'>
+            <input type="text" id="lvl-thumb" placeholder="/Images/placeholder.png">
         </div>
 
         <div class="field-group">
-            <label>Stats (Survivability | Gen | Mold | Habit | Size)</label>
-            <input type="text" id="lvl-survive" placeholder="Dangerous" oninput="updatePreview()">
-            <input type="text" id="lvl-gen" placeholder="Static" oninput="updatePreview()">
-            <input type="text" id="lvl-mold" placeholder="Mold Controlled" oninput="updatePreview()">
-            <input type="text" id="lvl-habit" placeholder="0.25%" oninput="updatePreview()">
-            <input type="text" id="lvl-size" placeholder="Large" oninput="updatePreview()">
+            <label>Dynamic Tags (Custom Names & Colors)</label>
+            <div id="dynamic-tags-container"></div>
+            <button class="nav-btn" style="font-size: 10px;" onclick="addDynamicTag()">+ ADD NEW TAG</button>
+        </div>
+
+        <div class="field-group">
+            <label>Main Data Nodes</label>
+            <input type="text" id="lvl-habit" placeholder="Habitability: 0.25%">
+            <input type="text" id="lvl-size" placeholder="Size: Large">
         </div>
 
         <div id="content-entries-container"></div>
@@ -87,14 +93,13 @@ permalink: /main/editor/
                 </div>
                 <div class="title-container">
                     <div class="title-group">
-                        <h1 class="level-id" id="prev-title">Level 0.5</h1>
-                        <h2 class="level-name" id="prev-subtitle">"Old Orange Halls"</h2>
+                        <h1 class="level-id" id="prev-title">Level ID</h1>
+                        <h2 class="level-name" id="prev-subtitle">"Subtitle"</h2>
                     </div>
-                    <div class="tags-row" id="prev-tags">
-                        </div>
+                    <div class="tags-row" id="prev-tags"></div>
                     <div class="data-box">
-                        <div class="data-item"><strong>HABITABILITY:</strong> <span id="prev-habit">0.25%</span></div>
-                        <div class="data-item"><strong>SIZE:</strong> <span id="prev-size">Large</span></div>
+                        <div class="data-item"><strong>HABITABILITY:</strong> <span id="prev-habit">...</span></div>
+                        <div class="data-item"><strong>SIZE:</strong> <span id="prev-size">...</span></div>
                     </div>
                 </div>
             </div>

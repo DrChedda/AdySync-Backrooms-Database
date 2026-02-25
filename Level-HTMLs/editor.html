@@ -58,6 +58,21 @@ permalink: /main/editor
             transition: transform 0.1s;
         }
         .auth-btn:active { transform: scale(0.95); }
+        
+        .back-btn {
+            background: transparent;
+            color: #ffeb3b;
+            border: 1px solid #ffeb3b;
+            margin-bottom: 20px;
+            font-size: 11px;
+            text-decoration: none;
+            padding: 5px 10px;
+            font-family: monospace;
+        }
+        .back-btn:hover {
+            background: rgba(255, 235, 59, 0.1);
+        }
+
         .blue-btn { background: var(--accent); color: white; }
         .save-btn { background: #4CAF50; color: white; }
         [contenteditable="true"] { 
@@ -102,6 +117,8 @@ permalink: /main/editor
 <body class="article-page">
 
     <div id="login-overlay">
+        <a href="{{ '/main' | relative_url }}" class="back-btn">← RETURN TO DATABASE</a>
+
         <div style="border: 2px solid var(--accent); padding: 40px; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; gap: 15px; box-shadow: 0 0 20px var(--accent-glow);">
             <h2 style="color:white; font-family: monospace; margin-top: 0; letter-spacing: 4px;">ACCESS RESTRICTED</h2>
             <input type="email" id="email-field" placeholder="DB_USER_EMAIL">

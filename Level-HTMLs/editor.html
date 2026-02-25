@@ -1,9 +1,12 @@
+---
+permalink: /main/editor
+---
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Database Editor | Protected</title>
-    <link rel="stylesheet" href="/main/master-style.css">
+    <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }

@@ -9,70 +9,148 @@ permalink: /main/editor
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        #login-overlay { position: fixed; inset: 0; background: #000; z-index: 20000; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 10px; }
-        .editor-top-bar { position: fixed; top: 0; left: 0; width: 100%; background: #111; border-bottom: 2px solid #ffeb3b; z-index: 10000; padding: 10px; display: none; gap: 15px; align-items: center; flex-wrap: wrap; }
-        input[type="email"], input[type="password"], input[type="text"] { padding: 10px; background: #222; border: 1px solid #444; color: white; width: 200px; transition: all 0.3s ease; font-family: monospace; }
-        input:focus { border-color: #ffeb3b; outline: none; }
-        .auth-btn { background: #ffeb3b; color: black; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; min-width: 120px; }
-        .secondary-btn { background: #444; color: white; border: none; padding: 8px 15px; cursor: pointer; font-size: 12px; margin-top: 5px; }
-        [contenteditable="true"] { border: 1px dashed #555; min-height: 20px; padding: 2px; }
-        .tab-controls { display: inline-flex; align-items: center; background: #222; margin-right: 5px; border-radius: 4px; }
-        .del-tab { background: #ff4444; color: white; border: none; padding: 5px 8px; cursor: pointer; }
+        /* Keeping your Yellow Top Bar as requested */
+        .editor-top-bar { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            background: #111; 
+            border-bottom: 3px solid #ffeb3b; /* Your preferred yellow */
+            z-index: 10000; 
+            padding: 10px 20px; 
+            display: none; 
+            gap: 15px; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Adjusting Login Overlay to match the blue/black theme */
+        #login-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: radial-gradient(circle, #001529 0%, #000 100%); 
+            z-index: 20000; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+
+        /* Styled Inputs to match master-style */
+        input[type="email"], input[type="password"], input[type="text"] { 
+            padding: 12px; 
+            background: rgba(0, 21, 41, 0.8); 
+            border: 1px solid var(--accent); 
+            color: #00d2ff; 
+            width: 250px; 
+            font-family: monospace;
+            box-shadow: inset 0 0 5px var(--accent-glow);
+        }
+        
+        input:focus { outline: 2px solid #ffeb3b; }
+
+        /* Unified Button Styles */
+        .auth-btn { 
+            background: #ffeb3b; /* Yellow for primary actions */
+            color: black; 
+            border: none; 
+            padding: 10px 20px; 
+            cursor: pointer; 
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.1s;
+        }
+        .auth-btn:active { transform: scale(0.95); }
+        
+        .blue-btn { background: var(--accent); color: white; }
+        .save-btn { background: #4CAF50; color: white; }
+
+        /* Content Editable styling */
+        [contenteditable="true"] { 
+            border: 1px dashed rgba(0, 153, 255, 0.5); 
+            transition: border 0.3s;
+        }
+        [contenteditable="true"]:focus { 
+            border: 1px solid #ffeb3b; 
+            outline: none; 
+            background: rgba(255, 235, 59, 0.05);
+        }
+
+        /* ID Switcher Styling */
+        .id-switcher { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            background: rgba(0,0,0,0.4); 
+            padding: 5px 10px; 
+            border: 1px solid #444; 
+        }
+        .id-label { 
+            color: #ffeb3b; 
+            font-size: 11px; 
+            font-weight: 900; 
+            font-family: monospace;
+        }
+
         body { padding-top: 100px; }
-        
         #signup-extra { display: none; flex-direction: column; gap: 10px; }
-        #key-field { border-color: #0099ff; }
-        
-        .id-switcher { display: flex; align-items: center; gap: 5px; background: #000; padding: 5px; border: 1px solid #333; }
-        .id-label { color: #ffeb3b; font-size: 10px; font-weight: bold; margin-right: 5px; }
     </style>
 </head>
 <body class="article-page">
 
     <div id="login-overlay">
-        <h2 style="color:white; font-family: monospace;">ACCESS RESTRICTED</h2>
-        <input type="email" id="email-field" placeholder="Email">
-        <input type="password" id="password-field" placeholder="Password">
-        <div id="signup-extra">
-            <input type="text" id="key-field" placeholder="Creation Key (Required)">
+        <div style="border: 2px solid var(--accent); padding: 40px; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; gap: 15px; box-shadow: 0 0 20px var(--accent-glow);">
+            <h2 style="color:white; font-family: monospace; margin-top: 0; letter-spacing: 4px;">ACCESS RESTRICTED</h2>
+            <input type="email" id="email-field" placeholder="DB_USER_EMAIL">
+            <input type="password" id="password-field" placeholder="DB_USER_PASS">
+            <div id="signup-extra">
+                <input type="text" id="key-field" placeholder="CREATION_KEY">
+            </div>
+            <div style="display: flex; gap: 10px; width: 100%;">
+                <button class="auth-btn" id="login-btn" style="flex:1" onclick="window.handleAuth('login')">SIGN IN</button>
+                <button class="auth-btn blue-btn" id="signup-btn" onclick="window.toggleSignup()">REGISTER</button>
+            </div>
+            <p id="auth-status" style="color: #ffeb3b; font-size: 12px; font-family: monospace;"></p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="auth-btn" id="login-btn" onclick="window.handleAuth('login')">SIGN IN</button>
-            <button class="auth-btn" id="signup-btn" style="background: #0099ff; color: white;" onclick="window.toggleSignup()">REGISTER</button>
-        </div>
-        <p id="auth-status" style="color: #ffeb3b; font-size: 13px; text-align: center; max-width: 300px;"></p>
-        <button id="back-to-login" class="secondary-btn" style="display:none;" onclick="location.reload()">← Back to Login</button>
     </div>
 
     <div class="editor-top-bar" id="editor-ui">
         <div class="id-switcher">
-            <span class="id-label">TARGET ID</span>
-            <input type="text" id="id-input" placeholder="level-0" style="width: 120px;">
-            <button class="auth-btn" style="min-width: 60px; padding: 10px;" onclick="window.switchPage()">LOAD</button>
+            <span class="id-label">TARGET_ID:</span>
+            <input type="text" id="id-input" placeholder="level-0" style="width: 130px; padding: 5px;">
+            <button class="auth-btn" style="min-width: 60px; padding: 5px 10px; font-size: 11px;" onclick="window.switchPage()">LOAD</button>
         </div>
 
-        <div class="id-switcher" style="border-color: #0099ff;">
-            <span class="id-label" style="color: #0099ff;">IMAGE FILE</span>
-            <input type="text" id="img-input" placeholder="level-0.png" oninput="window.updatePreview(this.value)">
+        <div class="id-switcher" style="border-color: var(--accent);">
+            <span class="id-label" style="color: var(--accent);">IMG_PATH:</span>
+            <input type="text" id="img-input" placeholder="level-0.png" style="width: 150px; padding: 5px;" oninput="window.updatePreview(this.value)">
         </div>
 
-        <button class="auth-btn" style="background: #0099ff; color: white;" onclick="window.createNewTab()">+ NEW TAB</button>
-        <button class="auth-btn" style="background: #4CAF50; color: white;" onclick="window.saveToSupabase()">PUSH CHANGES</button>
+        <button class="auth-btn blue-btn" onclick="window.createNewTab()">+ NEW TAB</button>
+        <button class="auth-btn save-btn" onclick="window.saveToSupabase()">PUSH CHANGES</button>
         <button class="auth-btn" style="background: #444; color: white;" onclick="window.handleLogout()">LOGOUT</button>
     </div>
 
     <div class="page-wrapper">
         <div class="level-header-area">
             <div class="image-box">
-                <img id="active-image" src="" alt="Level View">
+                <img id="active-image" src="" alt="Preview">
             </div>
             <div class="title-container">
-                <h1 id="edit-lvl-id" contenteditable="true">Level ID</h1>
-                <h2 id="edit-lvl-name" contenteditable="true">"Level Name"</h2>
+                <div class="title-group">
+                    <h1 id="edit-lvl-id" class="level-id" contenteditable="true">Level ID</h1>
+                    <h2 id="edit-lvl-name" class="level-name" contenteditable="true">"Level Name"</h2>
+                </div>
                 <div id="edit-tags" contenteditable="true" class="tags-row"></div>
                 <div id="edit-stats" contenteditable="true" class="data-box"></div>
             </div>
         </div>
+        
         <div class="information-box">
             <div id="tab-headers" class="tabs-container"></div>
             <div id="tab-contents-container"></div>
@@ -80,7 +158,7 @@ permalink: /main/editor
     </div>
 
     <script>
-        // 1. Setup
+        // Setup (Same as previous script but with updated variable names for UI)
         const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
         const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
         const db = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -88,12 +166,10 @@ permalink: /main/editor
         const urlParams = new URLSearchParams(window.location.search);
         let CURRENT_ID = urlParams.get('id') || 'level-0';
 
-        // 2. Navigation & Preview Logic
         window.switchPage = function() {
             const newId = document.getElementById('id-input').value.trim();
             if (newId) {
                 CURRENT_ID = newId;
-                // Update URL without reloading for a smooth feel
                 const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + CURRENT_ID;
                 window.history.pushState({path:newurl},'',newurl);
                 window.loadData();
@@ -101,21 +177,31 @@ permalink: /main/editor
         };
 
         window.updatePreview = function(val) {
-            // Automatically assumes files are in /Images/ folder
-            document.getElementById('active-image').src = val.startsWith('http') ? val : `/Images/${val}`;
+            if (!val) return;
+
+            let finalSrc;
+            if (val.startsWith('http')) {
+                finalSrc = val;
+            } else {
+                const cleanPath = val.startsWith('/') ? val : '/' + val;
+                
+                if (cleanPath.startsWith('/Images/')) {
+                    finalSrc = cleanPath;
+                } else {
+                    finalSrc = '/Images' + cleanPath;
+                }
+            }
+
+            document.getElementById('active-image').src = finalSrc;
+            console.log("Attempting to load image from:", finalSrc);
         };
 
-        // 3. Auth Logic
         window.toggleSignup = function() {
             const extra = document.getElementById('signup-extra');
-            const loginBtn = document.getElementById('login-btn');
-            const signupBtn = document.getElementById('signup-btn');
-            const backBtn = document.getElementById('back-to-login');
             if (extra.style.display === 'none' || extra.style.display === '') {
                 extra.style.display = 'flex';
-                loginBtn.style.display = 'none';
-                backBtn.style.display = 'block';
-                signupBtn.innerText = "CONFIRM REGISTRATION";
+                document.getElementById('login-btn').style.display = 'none';
+                document.getElementById('signup-btn').innerText = "CONFIRM REGISTRATION";
             } else {
                 window.handleAuth('signup');
             }
@@ -126,19 +212,17 @@ permalink: /main/editor
             const password = document.getElementById('password-field').value;
             const creationKey = document.getElementById('key-field').value;
             const statusBox = document.getElementById('auth-status');
-            statusBox.style.color = "#ffeb3b";
-            statusBox.innerText = mode === 'login' ? "Authenticating..." : "Creating account...";
-
+            
             if (mode === 'login') {
                 const { error } = await db.auth.signInWithPassword({ email, password });
-                if (error) { statusBox.style.color = "red"; statusBox.innerText = error.message; }
-                else { window.checkUser(); }
+                if (error) statusBox.innerText = "ERROR: " + error.message;
+                else window.checkUser();
             } else {
-                const { data, error } = await db.auth.signUp({ 
+                const { error } = await db.auth.signUp({ 
                     email, password, options: { data: { creation_key: creationKey } }
                 });
-                if (error) { statusBox.style.color = "red"; statusBox.innerText = error.message; }
-                else { window.checkUser(); }
+                if (error) statusBox.innerText = "ERROR: " + error.message;
+                else statusBox.innerText = "CHECK EMAIL FOR LINK";
             }
         };
 
@@ -157,11 +241,8 @@ permalink: /main/editor
             location.reload();
         };
 
-        // 4. Editor Core
         window.loadData = async function() {
             const { data } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
-            
-            // Default image logic
             const imgPath = data?.content?.imageFile || `${CURRENT_ID}.png`;
             document.getElementById('img-input').value = imgPath;
             window.updatePreview(imgPath);
@@ -174,15 +255,6 @@ permalink: /main/editor
                 document.getElementById('tab-headers').innerHTML = "";
                 document.getElementById('tab-contents-container').innerHTML = "";
                 data.content.tabs?.forEach(t => window.createNewTab(t.name, t.content));
-            } else {
-                // Clear for new entry
-                document.getElementById('edit-lvl-id').innerText = "NEW LEVEL";
-                document.getElementById('edit-lvl-name').innerText = "Name Here";
-                document.getElementById('edit-tags').innerHTML = "";
-                document.getElementById('edit-stats').innerHTML = "";
-                document.getElementById('tab-headers').innerHTML = "";
-                document.getElementById('tab-contents-container').innerHTML = "";
-                window.createNewTab("Description", "Enter content...");
             }
         };
 
@@ -203,10 +275,10 @@ permalink: /main/editor
 
             const { error } = await db.from('levels').upsert({ id: CURRENT_ID, content: payload });
             if (error) alert("Error: " + error.message);
-            else alert(`Saved to ${CURRENT_ID} successfully!`);
+            else alert(`SUCCESS: Data pushed to ${CURRENT_ID}`);
         };
 
-        window.createNewTab = function(name = "New Tab", content = "Edit...") {
+        window.createNewTab = function(name = "New Tab", content = "Edit content...") {
             const id = Date.now();
             const header = document.createElement('div');
             header.className = 'tab-controls';
@@ -222,7 +294,10 @@ permalink: /main/editor
             document.getElementById('tab-contents-container').appendChild(pane);
         };
 
-        window.deleteTab = (id) => { document.getElementById(`header-${id}`)?.remove(); document.getElementById(`content-${id}`)?.remove(); };
+        window.deleteTab = (id) => { 
+            document.getElementById(`header-${id}`)?.remove(); 
+            document.getElementById(`content-${id}`)?.remove(); 
+        };
 
         window.checkUser();
     </script>

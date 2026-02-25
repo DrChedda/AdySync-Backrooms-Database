@@ -20,14 +20,14 @@ permalink: /main
     <input type="text" id="search-box" placeholder="Search levels...">
     <div id="search-counter">&lt;0/0&gt;</div>
   </div>
-  <div class="nav-title">[Backrooms Level Database]</div>
+  
+  <div class="nav-right-section">
+    <a href="{{ '/main/editor' | relative_url | remove_last: '/' }}" class="editor-nav-btn">
+      EDITOR
+    </a>
+    <div class="nav-title">[Backrooms Level Database]</div>
+  </div>
 </nav>
-
-<div class="floating-controls">
-  <a href="{{ '/main/editor' | relative_url | remove_last: '/' }}" class="editor-link-btn">
-    [ OPEN EDITOR ]
-  </a>
-</div>
 
 <canvas id="canvas"></canvas>
 <div id="ui-layer"></div>

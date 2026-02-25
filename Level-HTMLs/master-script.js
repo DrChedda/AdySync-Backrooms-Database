@@ -1,10 +1,18 @@
+---
+permalink: /main/master-script.js
+---
+// 1. SUPABASE CONFIGURATION
 const _url = 'https://yczoxzkffmpbvfwfvdpo.supabase.co';
 const _key = 'sb_publishable_9CJs9lBVp8mfe7_FXjQ_DQ_hfwZVBJg';
 const supabase = supabase.createClient(_url, _key);
 
+// Global state
 const urlParams = new URLSearchParams(window.location.search);
 const levelSlug = urlParams.get('id') || 'level-0'; 
+let searchTimeout;
+let isSignUp = false;
 
+// 2. PUBLIC VIEW LOGIC (Level Data Loading)
 async function loadLevelData() {
     if (!document.getElementById('display-id')) return;
 
@@ -29,6 +37,7 @@ function renderPage(level, content) {
     document.getElementById('page-title').innerText = `${level.display_title} | Database`;
     document.getElementById('display-id').innerText = level.display_title;
     document.getElementById('display-name').innerText = `"${level.subtitle}"`;
+    // Update path if necessary to match your GitHub repo structure
     document.getElementById('level-image').src = `https://raw.githubusercontent.com/User/Repo/main/${level.thumbnail_path}`;
     
     document.getElementById('stat-habitability').innerText = level.habitability;
@@ -50,8 +59,7 @@ function renderPage(level, content) {
     });
 }
 
-let isSignUp = false;
-
+// 3. EDITOR AUTHENTICATION LOGIC
 function toggleAuthMode() {
     isSignUp = !isSignUp;
     document.getElementById('auth-title').innerText = isSignUp ? "Create Editor Account" : "Editor Login";
@@ -67,7 +75,7 @@ async function handleAuth() {
         const username = document.getElementById('username').value;
         const enteredKey = document.getElementById('invite-key').value;
 
-        const { data: secret, error: keyErr } = await supabase
+        const { data: secret } = await supabase
             .from('secrets')
             .select('key_value')
             .eq('key_name', 'invite_code')
@@ -100,9 +108,121 @@ async function checkUserSession() {
         authBox?.classList.add('hidden');
         editorUi.classList.remove('hidden');
         document.getElementById('user-display').innerText = user.user_metadata.username || user.email;
+        fetchLevelList(); // Refresh sidebar list
     }
 }
 
+// 4. EDITOR DATA MANAGEMENT
+async function fetchLevelList() {
+    const container = document.getElementById('lvl-list-container');
+    if (!container) return;
+
+    const { data } = await supabase.from('levels').select('display_title, level_id_slug');
+    if (data) {
+        container.innerHTML = data.map(l => 
+            `<span class="lvl-item" onclick="loadLevelIntoEditor('${l.level_id_slug}')">${l.display_title}</span>`
+        ).join('');
+    }
+}
+
+function addContentEntry(data = {}) {
+    const container = document.getElementById('content-entries-container');
+    const entryId = Date.now() + Math.random();
+    
+    const entryHtml = `
+        <div class="content-entry-card" id="entry-${entryId}">
+            <div class="entry-header">
+                <div style="display:flex; gap:10px;">
+                    <select class="entry-category">
+                        <option value="Landmark" ${data.category === 'Landmark' ? 'selected' : ''}>Landmark</option>
+                        <option value="Entrance" ${data.category === 'Entrance' ? 'selected' : ''}>Entrance</option>
+                    </select>
+                    <select class="entry-tab">
+                        <option value="info-tab" ${data.tab_type === 'info-tab' ? 'selected' : ''}>Info Tab</option>
+                        <option value="Landmarks-tab" ${data.tab_type === 'Landmarks-tab' ? 'selected' : ''}>Landmarks Tab</option>
+                    </select>
+                </div>
+                <button class="nav-btn" style="background:#ff3333;" onclick="this.closest('.content-entry-card').remove()">DELETE</button>
+            </div>
+            <input type="text" class="entry-title" placeholder="Node Title" value="${data.title || ''}">
+            <textarea class="entry-desc" placeholder="Description...">${data.description || ''}</textarea>
+            <div class="form-grid">
+                <input type="text" class="entry-coords" placeholder="Coords" value="${data.coordinates || ''}">
+                <input type="text" class="entry-dist" placeholder="Distance" value="${data.distance || ''}">
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', entryHtml);
+}
+
+async function saveFullLevel() {
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.innerText = "UPLOADING...";
+    saveBtn.disabled = true;
+
+    const levelData = {
+        level_id_slug: document.getElementById('lvl-slug').value,
+        display_title: document.getElementById('lvl-title').value,
+        subtitle: document.getElementById('lvl-subtitle').value,
+        thumbnail_path: document.getElementById('lvl-thumb').value,
+        theme_color: document.getElementById('lvl-color').value,
+        habitability: document.getElementById('lvl-habit').value,
+        size_description: document.getElementById('lvl-size').value,
+        survivability: document.getElementById('lvl-survive').value,
+        generation: document.getElementById('lvl-gen').value,
+        mold_presence: document.getElementById('lvl-mold').value
+    };
+
+    const { data: newLvl, error: lvlErr } = await supabase.from('levels').upsert(levelData).select().single();
+
+    if (lvlErr) {
+        alert("Error: " + lvlErr.message);
+    } else {
+        const entryCards = document.querySelectorAll('.content-entry-card');
+        const entries = Array.from(entryCards).map((card, index) => ({
+            level_id: newLvl.id,
+            category: card.querySelector('.entry-category').value,
+            tab_type: card.querySelector('.entry-tab').value,
+            title: card.querySelector('.entry-title').value,
+            description: card.querySelector('.entry-desc').value,
+            coordinates: card.querySelector('.entry-coords').value,
+            distance: card.querySelector('.entry-dist').value,
+            sort_order: index
+        }));
+
+        await supabase.from('level_content').delete().eq('level_id', newLvl.id); // Clear old content
+        const { error: contentErr } = await supabase.from('level_content').insert(entries);
+        
+        if (contentErr) alert("Content Error: " + contentErr.message);
+        else alert("Database Updated Successfully.");
+    }
+
+    saveBtn.innerText = "UPLOAD TO DATABASE";
+    saveBtn.disabled = false;
+    fetchLevelList();
+}
+
+async function loadLevelIntoEditor(slug) {
+    const { data: level } = await supabase.from('levels').select('*').eq('level_id_slug', slug).single();
+    if (!level) return;
+
+    document.getElementById('lvl-slug').value = level.level_id_slug;
+    document.getElementById('lvl-title').value = level.display_title;
+    document.getElementById('lvl-subtitle').value = level.subtitle;
+    document.getElementById('lvl-thumb').value = level.thumbnail_path;
+    document.getElementById('lvl-color').value = level.theme_color;
+    document.getElementById('lvl-habit').value = level.habitability;
+    document.getElementById('lvl-size').value = level.size_description;
+    document.getElementById('lvl-survive').value = level.survivability;
+    document.getElementById('lvl-gen').value = level.generation;
+    document.getElementById('lvl-mold').value = level.mold_presence;
+
+    const { data: content } = await supabase.from('level_content').select('*').eq('level_id', level.id);
+    document.getElementById('content-entries-container').innerHTML = '';
+    content?.forEach(c => addContentEntry(c));
+}
+
+// 5. UTILITY & TAB LOGIC
 function switchTab(tabName) {
     const tabButtons = document.querySelectorAll('.tab-button');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -148,9 +268,10 @@ function searchText() {
     }
 }
 
+// INITIALIZATION
 window.onload = () => {
     loadLevelData();
-    if (window.location.pathname.includes('editor.html')) {
+    if (window.location.pathname.includes('editor')) {
         checkUserSession();
     }
 };
@@ -164,7 +285,6 @@ document.getElementById('search-box')?.addEventListener('input', () => {
     searchTimeout = setTimeout(searchText, 300); 
 });
 
-// Side-tab logic (Factions/Landmarks)
 (function(){
     document.querySelectorAll('.tab-side-wrap').forEach(function(wrap){
         var tabs = wrap.querySelectorAll('.side-tab');

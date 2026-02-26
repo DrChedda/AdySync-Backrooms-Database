@@ -86,6 +86,15 @@ window.handleLogout = async function() {
 	location.reload();
 };
 
+document.querySelector('.information-box').addEventListener('click', function(e) {
+    if (e.target.classList.contains('information-box') || e.target.id === 'tab-contents-container') {
+        const activeContent = document.querySelector('.tab-content.active');
+        if (activeContent) {
+            activeContent.focus();
+        }
+    }
+});
+
 window.switchPage = function() {
 	const newId = document.getElementById('id-input').value.trim();
 	if (newId) {
@@ -120,7 +129,7 @@ window.addTag = function() {
     const text = document.getElementById('new-tag-text').value.trim();
     const color = document.getElementById('tag-color-select').value;
     if (!text) return;
-    
+
     const tagHtml = `<span class="tag ${color}" style="pointer-events: auto;" contenteditable="false" onclick="if(confirm('Remove this tag?')) this.remove()">${text}</span> `;
     document.getElementById('edit-tags').innerHTML += tagHtml;
     document.getElementById('new-tag-text').value = "";
@@ -188,21 +197,21 @@ window.saveToSupabase = async function() {
 };
 
 window.setActiveTab = function(id) {
-	document.querySelectorAll('.tab-button').forEach(b => {
-		b.classList.remove('active');
-		b.contentEditable = "false";
-	});
-	document.querySelectorAll('.tab-content').forEach(c => {
-		c.classList.remove('active');
-		c.contentEditable = "false";
-	});
-	const headerEl = document.querySelector(`#header-${id} .tab-button`);
-	const activeContent = document.getElementById(`content-${id}`);
-	if (headerEl && activeContent) {
-		headerEl.classList.add('active');
-		activeContent.classList.add('active');
-		activeContent.contentEditable = "true";
-	}
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('contenteditable', 'false');
+    });
+
+    const headerEl = document.querySelector(`#header-${id} .tab-button`);
+    const activeContent = document.getElementById(`content-${id}`);
+    
+    if (headerEl && activeContent) {
+        headerEl.classList.add('active');
+        activeContent.classList.add('active');
+        activeContent.setAttribute('contenteditable', 'true');
+        activeContent.focus();
+    }
 };
 
 window.createNewTab = function(name = "New Tab", content = "Edit content...", isFirst = false) {

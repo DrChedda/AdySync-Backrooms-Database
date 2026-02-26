@@ -117,15 +117,14 @@ window.updatePreview = function(val) {
 };
 
 window.addTag = function() {
-	const text = document.getElementById('new-tag-text').value.trim();
-	const color = document.getElementById('tag-color-select').value;
-	if (!text) return;
-
-	const tagHtml = `<span class="tag ${color}" contenteditable="false" onclick="if(confirm('Remove this tag?')) this.remove()">${text}</span> `;
-	document.getElementById('edit-tags').innerHTML += tagHtml;
-	document.getElementById('new-tag-text').value = "";
+    const text = document.getElementById('new-tag-text').value.trim();
+    const color = document.getElementById('tag-color-select').value;
+    if (!text) return;
+    
+    const tagHtml = `<span class="tag ${color}" style="pointer-events: auto;" contenteditable="false" onclick="if(confirm('Remove this tag?')) this.remove()">${text}</span> `;
+    document.getElementById('edit-tags').innerHTML += tagHtml;
+    document.getElementById('new-tag-text').value = "";
 };
-
 window.loadData = async function() {
 	const {
 		data

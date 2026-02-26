@@ -76,8 +76,9 @@ body.editor-active {
 
 .floating-tools {
 	position: absolute;
-	top: 100%;
+	bottom: 100%;
 	right: 0;
+	margin-bottom: 10px;
 	display: flex;
 	gap: 10px;
 	background: #111;
@@ -85,50 +86,16 @@ body.editor-active {
 	padding: 8px;
 	opacity: 0;
 	pointer-events: none;
-	transform: translateY(6px);
-	transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+	transform: translateY(10px);
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-	z-index: 1000;
-	backdrop-filter: blur(2px);
+	z-index: 100;
 }
 
 .hover-zone:focus-within>.floating-tools {
 	opacity: 1;
 	pointer-events: auto;
 	transform: translateY(0);
-}
-
-/* Make tabs area more visible when empty / not-focused */
-.tabs-container {
-	display: flex;
-	gap: 8px;
-	padding: 8px;
-	border: 1px dashed rgba(255, 235, 59, 0.12);
-	background: rgba(255, 235, 59, 0.01);
-	min-height: 44px;
-	align-items: center;
-	box-sizing: border-box;
-}
-
-.rich-editor-container {
-	border: 1px solid rgba(255,255,255,0.03);
-	min-height: 220px;
-	padding: 12px;
-	background: rgba(0,0,0,0.18);
-}
-
-.tab-button {
-	background: transparent;
-	border: 1px solid rgba(255,255,255,0.06);
-	padding: 6px 10px;
-	color: var(--edit-gold);
-	cursor: pointer;
-	font-weight: 700;
-}
-
-.tab-button.active {
-	background: var(--edit-gold);
-	color: #000;
 }
 
 .editor-input {
@@ -186,24 +153,6 @@ body.editor-active {
 	content: ' ✕';
 	font-size: 10px;
 	vertical-align: middle;
-}
-
-#edit-tags {
-	min-height: 40px;
-	padding: 8px;
-	border: 1px dashed rgba(255, 235, 59, 0.12);
-	background: rgba(255, 235, 59, 0.01);
-	box-sizing: border-box;
-	position: relative;
-	z-index: 2000;
-	pointer-events: auto;
-}
-
-#edit-tags:empty::before {
-	content: 'No tags — use the + Add Tag button';
-	color: rgba(255,235,59,0.45);
-	font-size: 13px;
-	font-family: monospace;
 }
 
 .tab-controls {

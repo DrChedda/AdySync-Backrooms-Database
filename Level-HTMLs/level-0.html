@@ -41,5 +41,87 @@ permalink: /main/level-0/
     </div>
 
     <script src="{{ '/main/master-script.js' | relative_url }}"></script>
+
+    <script>
+        const pathParts = window.location.pathname.split('/').filter(p => p);
+        const PAGE_ID = pathParts[pathParts.length - 1] || "level-0";
+        
+        const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
+        const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        async function renderLevel() {
+            const { data, error } = await supabaseClient
+                .from('levels')
+                .select('content')
+                .eq('id', PAGE_ID)
+                .single();
+
+            if (error || !data) {
+                document.getElementById('v-id').innerText = "Level Not Found";
+                return;
+            }
+
+            const c = data.content;
+            const repoBase = '/AdySync-Backrooms-Database';
+            
+            const imgElement = document.getElementById('v-image');
+            let imgVal = c.imageFile || (PAGE_ID + ".png");
+            
+            if (imgVal.startsWith('http')) {
+                imgElement.src = imgVal;
+            } else {
+                const cleanName = imgVal.startsWith('/') ? imgVal.substring(1) : imgVal;
+                const pathPrefix = cleanName.toLowerCase().startsWith('images/') ? '' : 'Images/';
+                imgElement.src = `${repoBase}/${pathPrefix}${cleanName}`;
+            }
+
+            imgElement.onerror = function() {
+                this.src = `${repoBase}/Images/placeholder.png`;
+                this.onerror = null;
+            };
+
+            document.getElementById('v-id').innerText = c.title || PAGE_ID;
+            document.getElementById('v-name').innerText = c.name || "";
+            document.getElementById('v-tags').innerHTML = c.tagsHtml || "";
+            
+            if(c.statsHtml) {
+                document.getElementById('v-stats').innerHTML = c.statsHtml;
+            }
+
+            const hContainer = document.getElementById('v-tab-headers');
+            const cContainer = document.getElementById('v-tab-contents');
+
+            if (c.tabs && c.tabs.length > 0) {
+                c.tabs.forEach((tab, i) => {
+                    const isActive = i === 0 ? 'active' : '';
+                    const tabId = `tab-${i}`;
+
+                    const btn = document.createElement('button');
+                    btn.className = `tab-button ${isActive}`;
+                    btn.setAttribute('data-tab', tabId);
+                    btn.innerText = tab.name;
+                    btn.onclick = () => switchTab(tabId); 
+                    hContainer.appendChild(btn);
+
+                    const pane = document.createElement('div');
+                    pane.className = `tab-content ${isActive}`;
+                    pane.id = tabId;
+                    pane.innerHTML = tab.content;
+                    cContainer.appendChild(pane);
+                });
+            }
+        }
+
+        renderLevel();
+    </script>
 </body>
 </html>

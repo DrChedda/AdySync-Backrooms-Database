@@ -253,13 +253,13 @@ body.editor-active {
 
 .ql-snow .ql-picker-options {
     background-color: #111 !important;
-    color: #000000 !important;
+    color: #ffffff !important;
     border: 1px solid #444 !important;
     box-shadow: 0 4px 15px rgba(0,0,0,0.5);
 }
 
 .ql-snow .ql-picker-item {
-    color: #000000 !important;
+    color: #ffffff !important;
 }
 
 .ql-snow .ql-picker-item:hover,
@@ -270,7 +270,7 @@ body.editor-active {
 .ql-snow .ql-tooltip {
     background-color: #1a1a1a !important;
     border: 1px solid var(--accent) !important;
-    color: #000000 !important;
+    color: #ffffff !important;
     box-shadow: 0 0 10px var(--accent-glow) !important;
 }
 

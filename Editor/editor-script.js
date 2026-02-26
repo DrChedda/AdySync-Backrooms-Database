@@ -254,10 +254,15 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
         theme: 'snow',
         modules: {
             toolbar: [
-                [{ 'header': [1, 2, 3, false] }],
+                [{ 'font': [] }, { 'size': [] }],
                 ['bold', 'italic', 'underline', 'strike'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'image', 'clean']
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'super' }, { 'script': 'sub' }],
+                [{ 'header': '1' }, { 'header': '2' }, 'blockquote', 'code-block'],
+                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }, { 'align': [] }],
+                ['link', 'image', 'formula'],
+                ['clean']
             ]
         }
     });

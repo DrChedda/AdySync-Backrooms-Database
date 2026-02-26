@@ -10,13 +10,17 @@ permalink: /main/editor
     <link rel="stylesheet" href="{{ '/main/editor/copy-master-style.css' | relative_url }}">
     <link rel="stylesheet" href="{{ '/main/editor/editor-style.css' | relative_url }}">
     <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
+    
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="article-page">
 
     <div id="login-overlay">
         <div class="auth-card">
-            <h2 id="auth-title" style="letter-spacing: 5px; color: #fff; margin-bottom: 30px;">AUTH_REQUIRED</h2>
+            <h2 id="auth-title" style="letter-spacing: 5px; color: #fff; margin-bottom: 30px; font-family: monospace;">AUTH_REQUIRED</h2>
             <div style="display: flex; flex-direction: column; gap: 15px;">
                 <input type="email" id="email-field" class="editor-input" placeholder="EMAIL">
                 <input type="password" id="password-field" class="editor-input" placeholder="PASSWORD">
@@ -26,20 +30,20 @@ permalink: /main/editor
                 <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
                 <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
                 <button class="btn-sleek" id="back-to-login" style="display:none; background: #333; color: #fff;" onclick="window.resetAuthUI()">Back</button>
-                <p id="auth-status" style="font-size: 10px; color: var(--edit-gold); font-family: monospace;"></p>
+                <p id="auth-status" style="font-size: 10px; color: #ffeb3b; font-family: monospace; text-align: center;"></p>
             </div>
         </div>
     </div>
 
-    <div class="editor-top-bar" id="editor-ui">
+    <div class="editor-top-bar" id="editor-ui" style="display: none;">
         <div class="input-group">
-            <span style="font-family: monospace; font-size: 11px; color: var(--edit-gold);">ID_TARGET:</span>
+            <span style="font-family: monospace; font-size: 11px; color: #ffeb3b;">ID_TARGET:</span>
             <input type="text" id="id-input" class="editor-input" style="width: 100px;">
             <button class="btn-sleek" onclick="window.switchPage()">LOAD</button>
         </div>
-        <div class="img-input-container">
-            <span style="font-family: monospace; font-size: 11px; color: var(--accent);">IMG_SRC:</span>
-            <input type="text" id="img-input" class="editor-input" oninput="window.updatePreview(this.value)">
+        <div class="img-input-container" style="flex: 1; display: flex; align-items: center; gap: 10px;">
+            <span style="font-family: monospace; font-size: 11px; color: #00d2ff;">IMG_SRC:</span>
+            <input type="text" id="img-input" class="editor-input" style="flex: 1;" oninput="window.updatePreview(this.value)">
         </div>
         <div class="editor-actions">
             <button class="btn-sleek save" onclick="window.saveToSupabase()">PUSH TO DATABASE</button>
@@ -60,7 +64,7 @@ permalink: /main/editor
                 
                 <div class="hover-zone" style="margin-top: 20px;">
                     <div class="floating-tools">
-                        <input type="text" id="new-tag-text" class="editor-input" placeholder="Tag Label">
+                        <input type="text" id="new-tag-text" class="editor-input" placeholder="Tag Label" style="width: 100px;">
                         <select id="tag-color-select" class="editor-input">
                             <option value="orange">Orange</option>
                             <option value="blue">Blue</option>
@@ -69,31 +73,21 @@ permalink: /main/editor
                         </select>
                         <button class="btn-sleek" onclick="window.addTag()">+ Add Tag</button>
                     </div>
-                    <div id="edit-tags" class="tags-row" tabindex="0" style="min-height: 40px; outline: none;"></div>
+                    <div id="edit-tags" class="tags-row" style="min-height: 40px; outline: none;"></div>
                 </div>
 
-                <div id="edit-stats" contenteditable="true" class="data-box" style="margin-top: 20px;">
-                    </div>
+                <div id="edit-stats" contenteditable="true" class="data-box" style="margin-top: 20px;"></div>
             </div>
         </div>
 
-        <div class="information-box hover-zone" style="margin-top: 40px;">
-            <div class="floating-tools" style="justify-content: flex-start; flex-wrap: wrap;">
-                <button class="tool-btn" onclick="formatDoc('bold')"><b>B</b></button>
-                <button class="tool-btn" onclick="formatDoc('italic')"><i>I</i></button>
-                <button class="tool-btn" onclick="formatDoc('underline')"><u>U</u></button>
-                <span style="border-left: 1px solid #444; margin: 0 5px;"></span>
-                <button class="tool-btn" onclick="formatDoc('insertUnorderedList')">• List</button>
-                <button class="tool-btn" onclick="formatDoc('insertOrderedList')">1. List</button>
-                <button class="tool-btn" onclick="formatDoc('createLink')">🔗 Link</button>
-                <span style="border-left: 1px solid #444; margin: 0 5px;"></span>
-                <button class="btn-sleek blue" onclick="window.createNewTab()">+ New Tab</button>
-            </div>
+        <div class="information-box" style="margin-top: 40px;">
+          <div class="tabs-header-wrapper" style="display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #333; margin-bottom: 10px;">
+              <div id="tab-headers" class="tabs-container" style="border: none; background: transparent; padding: 0;"></div>
+              <button class="btn-sleek blue" onclick="window.createNewTab()" style="height: 30px; padding: 0 10px;">+ NEW TAB</button>
+          </div>
 
-            <div id="tab-headers" class="tabs-container"></div>
-            <div id="tab-contents-container" class="rich-editor-container">
-                </div>
-        </div>
+          <div id="tab-contents-container" class="rich-editor-container"></div>
+      </div>
     </div>
 
     <script src="{{ '/main/editor/editor-script.js' | relative_url }}"></script>

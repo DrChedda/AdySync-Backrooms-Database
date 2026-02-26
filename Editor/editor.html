@@ -30,6 +30,12 @@ permalink: /main/editor
                 <button class="btn-sleek" id="login-btn" onclick="window.handleAuth('login')">Initialize Session</button>
                 <button class="btn-sleek blue" onclick="window.toggleSignup()" id="signup-btn">Request Access</button>
                 <button class="btn-sleek" id="back-to-login" style="display:none; background: #333; color: #fff;" onclick="window.resetAuthUI()">Back</button>
+                
+                <hr style="border: 0; border-top: 1px solid #333; margin: 10px 0;">
+                <button class="btn-sleek" style="background: transparent; border: 1px solid #444; color: #888; font-size: 10px;" onclick="window.location.href='/main'">
+                    ← RETURN TO MAIN SITE
+                </button>
+
                 <p id="auth-status" style="font-size: 10px; color: #ffeb3b; font-family: monospace; text-align: center;"></p>
             </div>
         </div>

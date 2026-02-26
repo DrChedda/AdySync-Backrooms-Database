@@ -316,14 +316,15 @@ canvas {
   background: #00d2ff;
 }
 
-/* --- Tabs Styles --- */
-.tabs-container {
-  display: flex;
-  width: calc(100% + 80px);
-  margin: -40px -40px 25px -40px;
-  padding: 0;
-  gap: 0;
-  border-bottom: 2px solid #0099ff;
+.tab-content {
+    display: none;
+    width: 100%;
+    min-height: 250px;
+    padding: 10px 0;
+    outline: none;
+    border: none !important;
+    color: inherit;
+    font-family: inherit;
 }
 
 .tab-button {

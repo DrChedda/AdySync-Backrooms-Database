@@ -167,27 +167,32 @@ window.saveToSupabase = async function() {
 };
 
 window.setActiveTab = function(id) {
-    // Just toggle the visual classes. Quill handles its own edibility.
-    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-    const headerEl = document.querySelector(`#header-${id} .tab-button`);
-    const activeContent = document.getElementById(`content-${id}`);
+    document.querySelectorAll('.tab-button').forEach(b => {
+        b.classList.remove('active');
+    });
     
-    if (headerEl && activeContent) {
-        headerEl.classList.add('active');
-        activeContent.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => {
+        c.classList.remove('active');
+        c.setAttribute('contenteditable', 'false');
+    });
+
+    const selectedHeader = document.querySelector(`#header-${id} .tab-button`);
+    const selectedContent = document.getElementById(`content-${id}`);
+
+    if (selectedHeader && selectedContent) {
+        selectedHeader.classList.add('active');
+        selectedContent.classList.add('active');
+        selectedContent.setAttribute('contenteditable', 'true');
+        selectedContent.focus();
     }
 };
 
-window.createNewTab = function(name = "New Tab", content = "", isFirst = false) {
+window.createNewTab = function(name = "New Tab", content = "Edit content...", isFirst = false) {
     const id = Date.now() + Math.random().toString(36).substr(2, 9);
     
-    // 1. Create Header
     const header = document.createElement('div');
     header.className = 'tab-controls';
     header.id = `header-${id}`;
-    header.dataset.tabId = id; 
     header.innerHTML = `
         <button class="tab-button" 
             onclick="window.setActiveTab('${id}')" 
@@ -196,29 +201,11 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     document.getElementById('tab-headers').appendChild(header);
 
-    // 2. Create Editor Container
     const pane = document.createElement('div');
     pane.className = 'tab-content';
     pane.id = `content-${id}`;
+    pane.innerHTML = content;
     document.getElementById('tab-contents-container').appendChild(pane);
-
-    // 3. Initialize Quill
-    const quill = new Quill(`#content-${id}`, {
-        theme: 'snow',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ 'header': 1 }, { 'header': 2 }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['link', 'image'],
-                ['clean']
-            ]
-        }
-    });
-
-    quill.clipboard.dangerouslyPasteHTML(content);
-    quillInstances[id] = quill;
 
     if (isFirst || document.querySelectorAll('.tab-button').length === 1) {
         window.setActiveTab(id);

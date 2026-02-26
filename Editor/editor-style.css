@@ -98,7 +98,6 @@ body.editor-active {
 	transform: translateY(0);
 }
 
-/* Make tabs area more visible when empty / not-focused */
 .tabs-container {
 	display: flex;
 	gap: 8px;

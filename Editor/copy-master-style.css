@@ -246,10 +246,10 @@ canvas {
   display: inline-block;
 }
 
+.information-box h1,
 .information-box h2, 
 .information-box h3 {
   color: #55acee;
-  font-size: 22px;
   font-weight: 800;
   text-transform: uppercase;
   border-bottom: 2px solid #0099ff;

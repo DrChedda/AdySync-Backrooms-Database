@@ -169,7 +169,8 @@ body.editor-active {
 }
 
 .tags-row .tag {
-	cursor: pointer;
+    pointer-events: auto !important;
+    cursor: pointer !important;
 	transition: all 0.2s ease;
 	position: relative;
 }
@@ -195,7 +196,8 @@ body.editor-active {
 	box-sizing: border-box;
 	position: relative;
 	z-index: 2000;
-	pointer-events: auto;
+    pointer-events: auto !important;
+    user-select: auto !important;
 }
 
 #edit-tags:empty::before {

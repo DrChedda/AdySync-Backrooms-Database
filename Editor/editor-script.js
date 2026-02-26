@@ -101,13 +101,28 @@ window.updatePreview = function(val) {
 };
 
 window.addTag = function() {
-    const text = document.getElementById('new-tag-text').value.trim();
+    const textInput = document.getElementById('new-tag-text');
+    const text = textInput.value.trim();
     const color = document.getElementById('tag-color-select').value;
+    
     if (!text) return;
 
-    const tagHtml = `<span class="tag ${color}" style="pointer-events: auto;" contenteditable="false" onclick="if(confirm('Remove this tag?')) this.remove()">${text}</span> `;
-    document.getElementById('edit-tags').innerHTML += tagHtml;
-    document.getElementById('new-tag-text').value = "";
+    const tag = document.createElement('span');
+    tag.className = `tag ${color}`;
+    tag.innerText = text;
+    tag.contentEditable = "false";
+    tag.style.pointerEvents = "auto";
+    tag.style.cursor = "pointer";
+
+    tag.onclick = function() {
+        if (confirm(`Remove tag "${text}"?`)) {
+            this.remove();
+        }
+    };
+
+    document.getElementById('edit-tags').appendChild(tag);
+    
+    textInput.value = "";
 };
 
 window.loadData = async function() {
@@ -121,16 +136,17 @@ window.loadData = async function() {
         document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
         document.getElementById('edit-lvl-name').innerText = data.content.name || "";
 
-        const tagsBox = document.getElementById('edit-tags');
-        tagsBox.innerHTML = data.content.tagsHtml ||
-            `<span class="tag orange" contenteditable="false">Survivability: N/A</span> <span class="tag yellow" contenteditable="false">Generation: Static</span>`;
+            const tagsBox = document.getElementById('edit-tags');
+            tagsBox.innerHTML = data.content.tagsHtml || "";
 
-        // Re-attach delete handlers to loaded tags
-        document.querySelectorAll('#edit-tags .tag').forEach(t => {
-            t.onclick = function() {
-                if (confirm('Remove this tag?')) this.remove();
-            };
-        });
+            tagsBox.querySelectorAll('.tag').forEach(tag => {
+                tag.style.cursor = "pointer";
+                tag.onclick = function() {
+                    if (confirm('Remove this tag?')) {
+                        this.remove();
+                    }
+                };
+            });
 
         document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
 

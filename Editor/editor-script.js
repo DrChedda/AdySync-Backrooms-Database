@@ -171,6 +171,7 @@ window.setActiveTab = function(id) {
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
     document.querySelectorAll('.ql-toolbar').forEach(t => {
+        t.classList.remove('active-toolbar');
         t.style.setProperty('display', 'none', 'important');
     });
 
@@ -183,7 +184,12 @@ window.setActiveTab = function(id) {
         
         const toolbar = selectedContent.previousElementSibling;
         if (toolbar && toolbar.classList.contains('ql-toolbar')) {
+            toolbar.classList.add('active-toolbar');
             toolbar.style.setProperty('display', 'block', 'important');
+        }
+        
+        if (quillInstances[id]) {
+            quillInstances[id].update();
         }
     }
 };
@@ -191,11 +197,10 @@ window.setActiveTab = function(id) {
 window.createNewTab = function(name = "New Tab", content = "", isFirst = false) {
     const id = Date.now() + Math.random().toString(36).substr(2, 9);
     
-    // 2. Create Header (Tab Button)
     const header = document.createElement('div');
     header.className = 'tab-controls';
     header.id = `header-${id}`;
-    header.dataset.tabId = id; // Crucial for deleteTab and setActiveTab logic
+    header.dataset.tabId = id;
     header.innerHTML = `
         <button class="tab-button" 
             onclick="window.setActiveTab('${id}')" 
@@ -204,11 +209,9 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     document.getElementById('tab-headers').appendChild(header);
 
-    // 3. Create Content Pane (Editor Container)
     const pane = document.createElement('div');
     pane.className = 'tab-content';
     pane.id = `content-${id}`;
-    // Note: We don't set innerHTML here; we let Quill handle the content injection
     document.getElementById('tab-contents-container').appendChild(pane);
 
     const quill = new Quill(`#content-${id}`, {

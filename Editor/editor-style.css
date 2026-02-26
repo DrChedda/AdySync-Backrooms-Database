@@ -267,3 +267,7 @@ body.editor-active {
 .ql-snow .ql-picker {
     color: #eee !important;
 }
+
+.active-toolbar {
+    display: block !important;
+}

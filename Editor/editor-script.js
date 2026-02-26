@@ -167,13 +167,11 @@ window.saveToSupabase = async function() {
 };
 
 window.setActiveTab = function(id) {
-    document.querySelectorAll('.tab-button').forEach(b => {
-        b.classList.remove('active');
-    });
+    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     
-    document.querySelectorAll('.tab-content').forEach(c => {
-        c.classList.remove('active');
-        c.setAttribute('contenteditable', 'false');
+    document.querySelectorAll('.ql-toolbar').forEach(t => {
+        t.style.setProperty('display', 'none', 'important');
     });
 
     const selectedHeader = document.querySelector(`#header-${id} .tab-button`);
@@ -182,17 +180,22 @@ window.setActiveTab = function(id) {
     if (selectedHeader && selectedContent) {
         selectedHeader.classList.add('active');
         selectedContent.classList.add('active');
-        selectedContent.setAttribute('contenteditable', 'true');
-        selectedContent.focus();
+        
+        const toolbar = selectedContent.previousElementSibling;
+        if (toolbar && toolbar.classList.contains('ql-toolbar')) {
+            toolbar.style.setProperty('display', 'block', 'important');
+        }
     }
 };
 
-window.createNewTab = function(name = "New Tab", content = "Edit content...", isFirst = false) {
+window.createNewTab = function(name = "New Tab", content = "", isFirst = false) {
     const id = Date.now() + Math.random().toString(36).substr(2, 9);
     
+    // 2. Create Header (Tab Button)
     const header = document.createElement('div');
     header.className = 'tab-controls';
     header.id = `header-${id}`;
+    header.dataset.tabId = id; // Crucial for deleteTab and setActiveTab logic
     header.innerHTML = `
         <button class="tab-button" 
             onclick="window.setActiveTab('${id}')" 
@@ -201,14 +204,38 @@ window.createNewTab = function(name = "New Tab", content = "Edit content...", is
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     document.getElementById('tab-headers').appendChild(header);
 
+    // 3. Create Content Pane (Editor Container)
     const pane = document.createElement('div');
     pane.className = 'tab-content';
     pane.id = `content-${id}`;
-    pane.innerHTML = content;
+    // Note: We don't set innerHTML here; we let Quill handle the content injection
     document.getElementById('tab-contents-container').appendChild(pane);
+
+    const quill = new Quill(`#content-${id}`, {
+        theme: 'snow',
+        modules: {
+            toolbar: [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'image', 'clean']
+            ]
+        }
+    });
+
+    if (content) {
+        quill.clipboard.dangerouslyPasteHTML(content);
+    }
+    
+    quillInstances[id] = quill;
 
     if (isFirst || document.querySelectorAll('.tab-button').length === 1) {
         window.setActiveTab(id);
+    } else {
+        const newlyCreatedToolbar = pane.previousElementSibling;
+        if (newlyCreatedToolbar && newlyCreatedToolbar.classList.contains('ql-toolbar')) {
+            newlyCreatedToolbar.style.setProperty('display', 'none', 'important');
+        }
     }
 };
 
@@ -219,7 +246,6 @@ window.deleteTab = (id) => {
     document.getElementById(`header-${id}`)?.remove();
     document.getElementById(`content-${id}`)?.remove();
     
-    // Clean up the Quill instance from memory
     delete quillInstances[id]; 
 
     if (wasActive) {

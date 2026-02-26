@@ -110,14 +110,14 @@ window.addTag = function() {
     const tag = document.createElement('span');
     tag.className = `tag ${color}`;
     tag.innerText = text;
-    tag.contentEditable = "false";
+    tag.style.cursor = "pointer";
     
-    tag.addEventListener('click', function(e) {
+    tag.onclick = function(e) {
         e.stopPropagation();
         if (confirm(`Remove tag "${text}"?`)) {
-            this.remove();
+            tag.remove();
         }
-    });
+    };
 
     document.getElementById('edit-tags').appendChild(tag);
     textInput.value = "";
@@ -140,12 +140,10 @@ window.loadData = async function() {
 
             tagsBox.querySelectorAll('.tag').forEach(tag => {
                 tag.style.cursor = "pointer";
-                tag.style.pointerEvents = "auto";
-                
                 tag.onclick = function(e) {
                     e.stopPropagation();
                     if (confirm(`Remove tag "${tag.innerText.trim()}"?`)) {
-                        this.remove();
+                        tag.remove();
                     }
                 };
             });

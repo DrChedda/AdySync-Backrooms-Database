@@ -210,6 +210,15 @@ canvas {
   text-transform: uppercase;
   border: 1px solid;
   letter-spacing: 1.5px;
+  cursor: pointer !important;
+  user-select: none;
+  display: inline-block;
+  transition: opacity 0.2s;
+}
+
+.tag:hover {
+    opacity: 0.8;
+    box-shadow: 0 0 5px rgba(255,255,255,0.2);
 }
 
 .tag.dark-red { color: #cc0000; border-color: #cc0000; background: rgba(204, 0, 0, 0.15); }

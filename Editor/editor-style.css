@@ -188,24 +188,6 @@ body.editor-active {
 	vertical-align: middle;
 }
 
-#edit-tags {
-	min-height: 40px;
-	padding: 8px;
-	border: 1px dashed rgba(255, 235, 59, 0.12);
-	background: rgba(255, 235, 59, 0.01);
-	box-sizing: border-box;
-	position: relative;
-	z-index: 2000;
-	pointer-events: auto;
-}
-
-#edit-tags:empty::before {
-	content: 'No tags — use the + Add Tag button';
-	color: rgba(255,235,59,0.45);
-	font-size: 13px;
-	font-family: monospace;
-}
-
 .tab-controls {
 	display: flex;
 	background: rgba(255, 255, 255, 0.05);

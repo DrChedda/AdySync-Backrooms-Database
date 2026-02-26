@@ -137,13 +137,32 @@ function searchText() {
 document.addEventListener('DOMContentLoaded', () => {
     renderLevel();
 
+    const lightbox = document.getElementById('image-lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    document.addEventListener('click', (e) => {
+        if (e.target.tagName === 'IMG' && e.target.id !== 'lightbox-img') {
+            if (lightbox && lightboxImg) {
+                lightboxImg.src = e.target.src;
+                lightbox.style.display = 'flex';
+            }
+        }
+    });
+
+    if (lightbox) {
+        lightbox.onclick = (e) => {
+            if (e.target !== lightboxImg) {
+                lightbox.style.display = 'none';
+            }
+        };
+    }
+
     const searchBox = document.getElementById('search-box');
     if (searchBox) {
         searchBox.addEventListener('input', () => {
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(searchText, 300); 
         });
-
         searchBox.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 clearTimeout(searchTimeout);

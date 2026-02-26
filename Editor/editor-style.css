@@ -76,7 +76,7 @@ body.editor-active {
 
 .floating-tools {
 	position: absolute;
-	bottom: calc(100% + 10px);
+	top: 100%;
 	right: 0;
 	display: flex;
 	gap: 10px;
@@ -88,7 +88,7 @@ body.editor-active {
 	transform: translateY(6px);
 	transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-	z-index: 10002;
+	z-index: 1000;
 	backdrop-filter: blur(2px);
 }
 

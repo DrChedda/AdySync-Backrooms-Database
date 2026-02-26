@@ -111,17 +111,15 @@ window.addTag = function() {
     tag.className = `tag ${color}`;
     tag.innerText = text;
     tag.contentEditable = "false";
-    tag.style.pointerEvents = "auto";
-    tag.style.cursor = "pointer";
-
-    tag.onclick = function() {
+    
+    tag.addEventListener('click', function(e) {
+        e.stopPropagation();
         if (confirm(`Remove tag "${text}"?`)) {
             this.remove();
         }
-    };
+    });
 
     document.getElementById('edit-tags').appendChild(tag);
-    
     textInput.value = "";
 };
 
@@ -136,23 +134,45 @@ window.loadData = async function() {
         document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
         document.getElementById('edit-lvl-name').innerText = data.content.name || "";
 
-            const tagsBox = document.getElementById('edit-tags');
+        const tagsBox = document.getElementById('edit-tags');
+        if (tagsBox) {
             tagsBox.innerHTML = data.content.tagsHtml || "";
 
             tagsBox.querySelectorAll('.tag').forEach(tag => {
                 tag.style.cursor = "pointer";
-                tag.onclick = function() {
-                    if (confirm('Remove this tag?')) {
+                tag.style.pointerEvents = "auto";
+                
+                tag.onclick = function(e) {
+                    e.stopPropagation();
+                    if (confirm(`Remove tag "${tag.innerText.trim()}"?`)) {
                         this.remove();
                     }
                 };
             });
+        }
 
-        document.getElementById('edit-stats').innerHTML = data.content.statsHtml || "";
+        const statsBox = document.getElementById('edit-stats');
+        if (statsBox) {
+            statsBox.innerHTML = data.content.statsHtml || "";
+        }
 
-        document.getElementById('tab-headers').innerHTML = "";
-        document.getElementById('tab-contents-container').innerHTML = "";
-        data.content.tabs?.forEach((t, i) => window.createNewTab(t.name, t.content, i === 0));
+        const tabHeaders = document.getElementById('tab-headers');
+        const tabContents = document.getElementById('tab-contents-container');
+        
+        if (tabHeaders && tabContents) {
+            tabHeaders.innerHTML = "";
+            tabContents.innerHTML = "";
+            
+            for (let key in quillInstances) {
+                delete quillInstances[key];
+            }
+
+            if (data.content.tabs && data.content.tabs.length > 0) {
+                data.content.tabs.forEach((t, i) => {
+                    window.createNewTab(t.name, t.content, i === 0);
+                });
+            }
+        }
     }
 };
 

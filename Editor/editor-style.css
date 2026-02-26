@@ -300,3 +300,20 @@ body.editor-active {
 .active-toolbar {
     display: block !important;
 }
+
+body.editor-active {
+    -webkit-user-select: auto !important;
+    -moz-user-select: auto !important;
+    -ms-user-select: auto !important;
+    user-select: auto !important;
+}
+
+#edit-tags, .tag, .floating-tools, .editor-input, .btn-sleek {
+    pointer-events: auto !important;
+    z-index: 9999 !important;
+    position: relative;
+}
+
+.hover-zone {
+    pointer-events: auto !important;
+}

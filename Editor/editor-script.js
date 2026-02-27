@@ -236,11 +236,12 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
     header.id = `header-${id}`;
     header.dataset.tabId = id;
     header.innerHTML = `
-        <button class="tab-button" 
+        <span class="tab-button" 
+            role="button"
             onclick="window.setActiveTab('${id}')" 
             ondblclick="this.contentEditable='true'; this.focus();"
-            onkeydown="event.stopPropagation(); if(event.key === 'Enter'){ event.preventDefault(); this.blur(); }"
-            onblur="this.contentEditable='false'">${name}</button>
+            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); this.blur(); }"
+            onblur="this.contentEditable='false'">${name}</span>
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     document.getElementById('tab-headers').appendChild(header);
 

@@ -124,6 +124,11 @@ body.editor-active {
 	color: var(--edit-gold);
 	cursor: pointer;
 	font-weight: 700;
+	white-space: nowrap;
+	vertical-align: middle;
+	max-width: 250px;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .tab-button.active {

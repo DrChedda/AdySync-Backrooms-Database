@@ -6,59 +6,45 @@ permalink: /main/level-19/
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Level 0 | Database</title>
+    <title>Level 19 | Database</title>
     <link rel="stylesheet" href="{{ '/main/master-style.css' | relative_url }}">
-    <link rel="icon" type="image/png" href="{{ '/favicon.png' | relative_url }}">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 </head>
 <body class="article-page">
 
-<nav id="top-nav">
-  <a href="{{ '/main' | relative_url }}" class="nav-btn">← BACK</a>
-  <input type="text" id="search-box" placeholder="Search page content...">
-  <button id="search-btn-nav" class="nav-btn" onclick="searchText()">Search</button>
-  <div class="nav-title">[Backrooms Level Database]</div>
-</nav>
+    <nav id="top-nav">
+        <a href="{{ '/main' | relative_url }}" class="nav-btn">← BACK</a>
+        <input type="text" id="search-box" placeholder="Search page content...">
+        <div class="nav-title">[Backrooms Level Database]</div>
+    </nav>
 
-<div class="page-wrapper">
-  
-  <div class="level-header-area">
-    <div class="image-box">
-      <img src="{{ '/Images/placeholder.png' | relative_url }}" alt="Level View">
-    </div>
+    <div class="page-wrapper">
+        <div class="level-header-area">
+            <div class="image-box">
+                <img id="v-image" src="" alt="Level View">
+            </div>
 
-   <div class="title-container">
-    <div class="title-group">
-        <h1 class="level-id">Level 19</h1>
-        <h2 class="level-name">"Dark Hotel"</h2>
-    </div>
-    
-    <div class="tags-row">
-        <span class="tag orange">Survivability: Unsafe</span>
-        <span class="tag yellow">Generation: Static</span>
-        <span class="tag dark-green">Mold Presence: Medium</span>
-    </div>
+            <div class="title-container">
+                <div class="title-group">
+                    <h1 id="v-id" class="level-id">Loading...</h1>
+                    <h2 id="v-name" class="level-name"></h2>
+                </div>
+                <div class="tags-row" id="v-tags"></div>
+                <div id="v-stats"></div>
+            </div>
+        </div>
 
-    <div class="data-box">
-        <div class="data-item"><strong>HABITABILITY:</strong> N/A</div>
-        <div class="data-item"><strong>SIZE:</strong> N/A</div>
-    </div>
-</div>
-    </div>
         <div class="information-box">
-            <div class="tabs-container">
-                <button class="tab-button active" data-tab="info-tab">Information</button>
-                <button class="tab-button" data-tab="Landmarks-tab">Landmarks</button>
-            </div>
-            
-            <div class="tab-content active" id="info-tab">
-            </div>
-            <div class="tab-content" id="Landmarks-tab">
-                <p>Landmarks tab content.</p>
-            </div>
+            <div class="tabs-container" id="v-tab-headers"></div>
+            <div id="v-tab-contents" class="ql-editor"></div>
+        </div>
     </div>
-</div>
 
-<script src="{{ '/main/master-script.js' | relative_url }}"></script>
+    <div id="image-lightbox" class="lightbox">
+        <img id="lightbox-img" src="" alt="Enlarged view">
+    </div>
 
+    <script src="{{ '/main/master-script.js' | relative_url }}"></script>
 </body>
 </html>

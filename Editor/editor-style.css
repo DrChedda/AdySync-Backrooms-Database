@@ -316,3 +316,9 @@ body.editor-active {
 .hover-zone {
     pointer-events: auto !important;
 }
+
+.tab-button[contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    cursor: text;
+}

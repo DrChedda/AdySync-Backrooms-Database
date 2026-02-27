@@ -239,6 +239,7 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
         <button class="tab-button" 
             onclick="window.setActiveTab('${id}')" 
             ondblclick="this.contentEditable='true'; this.focus();"
+            onkeydown="event.stopPropagation(); if(event.key === 'Enter'){ event.preventDefault(); this.blur(); }"
             onblur="this.contentEditable='false'">${name}</button>
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     document.getElementById('tab-headers').appendChild(header);

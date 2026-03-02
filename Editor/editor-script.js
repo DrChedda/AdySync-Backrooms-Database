@@ -5,79 +5,55 @@ const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
 const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
 const db = window.supabase.createClient(supabaseUrl, supabaseKey);
 const quillInstances = {};
-const urlParams = new URLSearchParams(window.location.search);
-let CURRENT_ID = urlParams.get('id') || 'level-0';
+let CURRENT_ID = new URLSearchParams(window.location.search).get('id') || 'level-0';
+
+const getEl = (id) => document.getElementById(id);
 
 window.toggleSignup = function() {
-    const extra = document.getElementById('signup-extra');
-    const loginBtn = document.getElementById('login-btn');
-    const signupBtn = document.getElementById('signup-btn');
-    const backBtn = document.getElementById('back-to-login');
-    const title = document.getElementById('auth-title');
-    if (extra.style.display === 'none' || extra.style.display === '') {
-        extra.style.display = 'flex';
-        loginBtn.style.display = 'none';
-        backBtn.style.display = 'block';
-        title.innerText = "CREATE ACCOUNT";
-        signupBtn.innerText = "CONFIRM REGISTRATION";
-        signupBtn.style.width = "100%";
-    } else {
-        window.handleAuth('signup');
-    }
-};
-
-window.resetAuthUI = function() {
-    document.getElementById('signup-extra').style.display = 'none';
-    document.getElementById('login-btn').style.display = 'block';
-    document.getElementById('back-to-login').style.display = 'none';
-    document.getElementById('auth-title').innerText = "ACCESS RESTRICTED";
-    const signupBtn = document.getElementById('signup-btn');
-    signupBtn.innerText = "REGISTER";
-    signupBtn.style.width = "auto";
+    const extra = getEl('signup-extra');
+    const isLogin = extra.style.display === 'none' || !extra.style.display;
+    
+    extra.style.display = isLogin ? 'flex' : 'none';
+    getEl('login-btn').style.display = isLogin ? 'none' : 'block';
+    getEl('back-to-login').style.display = isLogin ? 'block' : 'none';
+    getEl('auth-title').textContent = isLogin ? "CREATE ACCOUNT" : "ACCESS RESTRICTED";
+    
+    const signupBtn = getEl('signup-btn');
+    signupBtn.textContent = isLogin ? "CONFIRM REGISTRATION" : "REGISTER";
+    signupBtn.style.width = isLogin ? "100%" : "auto";
 };
 
 window.handleAuth = async function(mode) {
-    const email = document.getElementById('email-field').value;
-    const password = document.getElementById('password-field').value;
-    const creationKey = document.getElementById('key-field').value;
-    const statusBox = document.getElementById('auth-status');
-    if (mode === 'login') {
-        const { error } = await db.auth.signInWithPassword({ email, password });
-        if (error) statusBox.innerText = "ERROR: " + error.message;
-        else window.checkUser();
-    } else {
-        const { error } = await db.auth.signUp({
-            email,
-            password,
-            options: { data: { creation_key: creationKey } }
-        });
-        if (error) statusBox.innerText = "ERROR: " + error.message;
-        else statusBox.innerText = "CHECK EMAIL FOR LINK";
-    }
+    const email = getEl('email-field').value;
+    const password = getEl('password-field').value;
+    const statusBox = getEl('auth-status');
+    
+    const { error } = (mode === 'login') 
+        ? await db.auth.signInWithPassword({ email, password })
+        : await db.auth.signUp({ email, password, options: { data: { creation_key: getEl('key-field').value } } });
+
+    if (error) statusBox.textContent = `ERROR: ${error.message}`;
+    else mode === 'login' ? window.checkUser() : (statusBox.textContent = "CHECK EMAIL FOR LINK");
 };
 
 window.checkUser = async function() {
     const { data: { user } } = await db.auth.getUser();
     if (user) {
         document.body.classList.add('editor-active');
-        document.getElementById('login-overlay').style.display = 'none';
-        document.getElementById('editor-ui').style.display = 'flex';
-        document.getElementById('id-input').value = CURRENT_ID;
+        getEl('login-overlay').style.display = 'none';
+        getEl('editor-ui').style.display = 'flex';
+        getEl('id-input').value = CURRENT_ID;
         window.loadData();
     }
 };
 
-window.handleLogout = async function() {
-    await db.auth.signOut();
-    location.reload();
-};
-
 window.switchPage = function() {
-    const newId = document.getElementById('id-input').value.trim();
-    if (newId) {
+    const newId = getEl('id-input').value.trim();
+    if (newId && newId !== CURRENT_ID) {
         CURRENT_ID = newId;
-        const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?id=' + CURRENT_ID;
-        window.history.pushState({ path: newurl }, '', newurl);
+        const url = new URL(window.location);
+        url.searchParams.set('id', newId);
+        window.history.pushState({}, '', url);
         window.loadData();
     }
 };
@@ -85,216 +61,137 @@ window.switchPage = function() {
 window.updatePreview = function(val) {
     if (!val) return;
     const repoBase = '/AdySync-Backrooms-Database';
-    let finalSrc;
-    if (val.startsWith('http')) {
-        finalSrc = val;
-    } else {
-        const cleanName = val.startsWith('/') ? val.substring(1) : val;
-        finalSrc = cleanName.toLowerCase().startsWith('images/') ? `${repoBase}/${cleanName}` : `${repoBase}/Images/${cleanName}`;
-    }
-    const imgElement = document.getElementById('active-image');
-    imgElement.onerror = function() {
-        this.src = `${repoBase}/Images/placeholder.png`;
-        this.onerror = null;
-    };
-    imgElement.src = finalSrc;
+    let src = val.startsWith('http') ? val : `${repoBase}/${val.toLowerCase().startsWith('images/') ? val : 'Images/' + val}`;
+    
+    const img = getEl('active-image');
+    img.onerror = () => { img.src = `${repoBase}/Images/placeholder.png`; img.onerror = null; };
+    img.src = src;
 };
 
+getEl('edit-tags').addEventListener('click', (e) => {
+    const tag = e.target.closest('.tag');
+    if (tag && confirm(`Remove tag "${tag.textContent.trim()}"?`)) tag.remove();
+});
+
 window.addTag = function() {
-    const textInput = document.getElementById('new-tag-text');
-    const text = textInput.value.trim();
-    const color = document.getElementById('tag-color-select').value;
-    
-    if (!text) return;
-
+    const input = getEl('new-tag-text');
+    if (!input.value.trim()) return;
     const tag = document.createElement('span');
-    tag.className = `tag ${color}`;
-    tag.innerText = text;
-    tag.style.cursor = "pointer";
-    
-    tag.onclick = function(e) {
-        e.stopPropagation();
-        if (confirm(`Remove tag "${text}"?`)) {
-            tag.remove();
-        }
-    };
-
-    document.getElementById('edit-tags').appendChild(tag);
-    textInput.value = "";
+    tag.className = `tag ${getEl('tag-color-select').value}`;
+    tag.textContent = input.value.trim();
+    getEl('edit-tags').appendChild(tag);
+    input.value = "";
 };
 
 window.loadData = async function() {
     const { data } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
+    const content = data?.content || {};
 
-    const imgPath = data?.content?.imageFile || `${CURRENT_ID}.png`;
-    document.getElementById('img-input').value = imgPath;
-    window.updatePreview(imgPath);
+    getEl('img-input').value = content.imageFile || `${CURRENT_ID}.png`;
+    window.updatePreview(getEl('img-input').value);
+    getEl('edit-lvl-id').textContent = content.title || CURRENT_ID;
+    getEl('edit-lvl-name').textContent = content.name || "";
+    getEl('edit-tags').innerHTML = content.tagsHtml || "";
+    getEl('edit-stats').innerHTML = content.statsHtml || "";
 
-    if (data?.content) {
-        document.getElementById('edit-lvl-id').innerText = data.content.title || CURRENT_ID;
-        document.getElementById('edit-lvl-name').innerText = data.content.name || "";
+    Object.keys(quillInstances).forEach(id => delete quillInstances[id]);
+    getEl('tab-headers').innerHTML = "";
+    getEl('tab-contents-container').innerHTML = "";
 
-        const tagsBox = document.getElementById('edit-tags');
-        if (tagsBox) {
-            tagsBox.innerHTML = data.content.tagsHtml || "";
-
-            tagsBox.querySelectorAll('.tag').forEach(tag => {
-                tag.style.cursor = "pointer";
-                tag.onclick = function(e) {
-                    e.stopPropagation();
-                    if (confirm(`Remove tag "${tag.innerText.trim()}"?`)) {
-                        tag.remove();
-                    }
-                };
-            });
-        }
-
-        const statsBox = document.getElementById('edit-stats');
-        if (statsBox) {
-            statsBox.innerHTML = data.content.statsHtml || "";
-        }
-
-        const tabHeaders = document.getElementById('tab-headers');
-        const tabContents = document.getElementById('tab-contents-container');
-        
-        if (tabHeaders && tabContents) {
-            tabHeaders.innerHTML = "";
-            tabContents.innerHTML = "";
-            
-            for (let key in quillInstances) {
-                delete quillInstances[key];
-            }
-
-            if (data.content.tabs && data.content.tabs.length > 0) {
-                data.content.tabs.forEach((t, i) => {
-                    window.createNewTab(t.name, t.content, i === 0);
-                });
-            }
-        }
+    if (content.tabs?.length) {
+        content.tabs.forEach((t, i) => window.createNewTab(t.name, t.content, i === 0));
     }
 };
 
 window.saveToSupabase = async function() {
-    const tabs = [];
-    
-    document.querySelectorAll('.tab-controls').forEach((ctrl) => {
-        const id = ctrl.dataset.tabId;
-        const name = ctrl.querySelector('.tab-button').innerText;
-        const content = quillInstances[id].root.innerHTML;
-        
-        tabs.push({ name: name, content: content });
-    });
+    const tabs = Array.from(document.querySelectorAll('.tab-controls')).map(ctrl => ({
+        name: ctrl.querySelector('.tab-button').textContent,
+        content: quillInstances[ctrl.dataset.tabId].root.innerHTML
+    }));
 
     const payload = {
-        title: document.getElementById('edit-lvl-id').innerText,
-        name: document.getElementById('edit-lvl-name').innerText,
-        tagsHtml: document.getElementById('edit-tags').innerHTML,
-        statsHtml: document.getElementById('edit-stats').innerHTML,
-        imageFile: document.getElementById('img-input').value,
-        tabs: tabs
+        title: getEl('edit-lvl-id').textContent,
+        name: getEl('edit-lvl-name').textContent,
+        tagsHtml: getEl('edit-tags').innerHTML,
+        statsHtml: getEl('edit-stats').innerHTML,
+        imageFile: getEl('img-input').value,
+        tabs
     };
 
     const { error } = await db.from('levels').upsert({ id: CURRENT_ID, content: payload });
-
-    if (error) alert("Error: " + error.message);
-    else alert(`SUCCESS: Data pushed to ${CURRENT_ID}`);
+    alert(error ? `Error: ${error.message}` : `SUCCESS: Data pushed to ${CURRENT_ID}`);
 };
 
+/* --- Tab Engine --- */
 window.setActiveTab = function(id) {
-    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    document.querySelectorAll('.ql-toolbar').forEach(t => {
-        t.classList.remove('active-toolbar');
-        t.style.setProperty('display', 'none', 'important');
+    document.querySelectorAll('.tab-button, .tab-content, .ql-toolbar').forEach(el => {
+        el.classList.remove('active', 'active-toolbar');
+        if (el.classList.contains('ql-toolbar')) el.style.setProperty('display', 'none', 'important');
     });
 
-    const selectedHeader = document.querySelector(`#header-${id} .tab-button`);
-    const selectedContent = document.getElementById(`content-${id}`);
+    const header = document.querySelector(`#header-${id} .tab-button`);
+    const pane = getEl(`content-${id}`);
+    const toolbar = pane?.previousElementSibling;
 
-    if (selectedHeader && selectedContent) {
-        selectedHeader.classList.add('active');
-        selectedContent.classList.add('active');
-        
-        const toolbar = selectedContent.previousElementSibling;
-        if (toolbar && toolbar.classList.contains('ql-toolbar')) {
+    if (header && pane) {
+        header.classList.add('active');
+        pane.classList.add('active');
+        if (toolbar?.classList.contains('ql-toolbar')) {
             toolbar.classList.add('active-toolbar');
             toolbar.style.setProperty('display', 'block', 'important');
         }
-        
-        if (quillInstances[id]) {
-            quillInstances[id].update();
-        }
+        quillInstances[id]?.update();
     }
 };
 
 window.createNewTab = function(name = "New Tab", content = "", isFirst = false) {
-    const id = Date.now() + Math.random().toString(36).substr(2, 9);
+    const id = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
     
     const header = document.createElement('div');
     header.className = 'tab-controls';
     header.id = `header-${id}`;
     header.dataset.tabId = id;
     header.innerHTML = `
-        <span class="tab-button" 
-            role="button"
-            onclick="window.setActiveTab('${id}')" 
-            ondblclick="this.contentEditable='true'; this.focus();"
-            onkeydown="if(event.key === 'Enter'){ event.preventDefault(); this.blur(); }"
-            onblur="this.contentEditable='false'">${name}</span>
+        <span class="tab-button" role="button" onclick="window.setActiveTab('${id}')" 
+              ondblclick="this.contentEditable='true';this.focus()"
+              onblur="this.contentEditable='false'">${name}</span>
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
-    document.getElementById('tab-headers').appendChild(header);
+    getEl('tab-headers').appendChild(header);
 
     const pane = document.createElement('div');
     pane.className = 'tab-content';
     pane.id = `content-${id}`;
-    document.getElementById('tab-contents-container').appendChild(pane);
+    getEl('tab-contents-container').appendChild(pane);
 
     const quill = new Quill(`#content-${id}`, {
         theme: 'snow',
         modules: {
             toolbar: [
-                [{ 'font': [] }, { 'size': [] }],
-                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'header': [1, 2, false] }],
+                ['bold', 'italic', 'underline'],
                 [{ 'color': [] }, { 'background': [] }],
-                [{ 'script': 'super' }, { 'script': 'sub' }],
-                [{ 'header': '1' }, { 'header': '2' }, 'blockquote', 'code-block'],
-                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-                [{ 'direction': 'rtl' }, { 'align': [] }],
-                ['link', 'image', 'formula'],
-                ['clean']
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['link', 'image', 'clean']
             ]
         }
     });
 
-    if (content) {
-        quill.clipboard.dangerouslyPasteHTML(content);
-    }
-    
+    if (content) quill.clipboard.dangerouslyPasteHTML(content);
     quillInstances[id] = quill;
 
-    if (isFirst || document.querySelectorAll('.tab-button').length === 1) {
-        window.setActiveTab(id);
-    } else {
-        const newlyCreatedToolbar = pane.previousElementSibling;
-        if (newlyCreatedToolbar && newlyCreatedToolbar.classList.contains('ql-toolbar')) {
-            newlyCreatedToolbar.style.setProperty('display', 'none', 'important');
-        }
-    }
+    if (isFirst) window.setActiveTab(id);
+    else pane.previousElementSibling.style.setProperty('display', 'none', 'important');
 };
 
 window.deleteTab = (id) => {
-    const header = document.querySelector(`#header-${id} .tab-button`);
-    const wasActive = header ? header.classList.contains('active') : false;
-    
-    document.getElementById(`header-${id}`)?.remove();
-    document.getElementById(`content-${id}`)?.remove();
-    
+    const wasActive = document.querySelector(`#header-${id} .tab-button`)?.classList.contains('active');
+    getEl(`header-${id}`)?.remove();
+    getEl(`content-${id}`)?.remove();
     delete quillInstances[id]; 
 
     if (wasActive) {
-        const firstRemaining = document.querySelector('.tab-controls');
-        if (firstRemaining) window.setActiveTab(firstRemaining.dataset.tabId);
+        const first = document.querySelector('.tab-controls');
+        if (first) window.setActiveTab(first.dataset.tabId);
     }
 };
 

@@ -5,20 +5,17 @@ const supabaseUrl = 'https://wmbvsbhbmryhzgktfxfz.supabase.co';
 const supabaseKey = 'sb_publishable_X47RHqCndZ9vdvVT_ZX4Jw_6X7fEHf_';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
-const pathParts = window.location.pathname.split('/').filter(p => p);
+const pathParts = window.location.pathname.split('/').filter(Boolean);
 const PAGE_ID = pathParts[pathParts.length - 1] || "level-0";
 
 let searchTimeout;
 
 function switchTab(tabId) {
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    const buttons = document.querySelectorAll('.tab-button');
+    const contents = document.querySelectorAll('.tab-content');
     
-    const targetBtn = document.querySelector(`[data-tab="${tabId}"]`);
-    const targetContent = document.getElementById(tabId);
-    
-    if (targetBtn) targetBtn.classList.add('active');
-    if (targetContent) targetContent.classList.add('active');
+    buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId));
+    contents.forEach(content => content.classList.toggle('active', content.id === tabId));
 }
 
 async function renderLevel() {
@@ -28,9 +25,9 @@ async function renderLevel() {
         .eq('id', PAGE_ID)
         .single();
 
+    const vId = document.getElementById('v-id');
     if (error || !data) {
-        const idElem = document.getElementById('v-id');
-        if (idElem) idElem.innerText = "Level Not Found";
+        if (vId) vId.textContent = "Level Not Found";
         return;
     }
 
@@ -39,69 +36,77 @@ async function renderLevel() {
     
     const imgElement = document.getElementById('v-image');
     if (imgElement) {
-        let imgVal = c.imageFile || (PAGE_ID + ".png");
+        let imgVal = c.imageFile || `${PAGE_ID}.png`;
         if (imgVal.startsWith('http')) {
             imgElement.src = imgVal;
         } else {
-            const cleanName = imgVal.startsWith('/') ? imgVal.substring(1) : imgVal;
+            const cleanName = imgVal.replace(/^\//, '');
             const pathPrefix = cleanName.toLowerCase().startsWith('images/') ? '' : 'Images/';
             imgElement.src = `${repoBase}/${pathPrefix}${cleanName}`;
         }
-        imgElement.onerror = function() {
-            this.src = `${repoBase}/Images/placeholder.png`;
-            this.onerror = null;
+        imgElement.onerror = () => {
+            imgElement.src = `${repoBase}/Images/placeholder.png`;
+            imgElement.onerror = null;
         };
     }
 
-    const vId = document.getElementById('v-id');
+    if (vId) vId.textContent = c.title || PAGE_ID;
+    
     const vName = document.getElementById('v-name');
+    if (vName) vName.textContent = c.name || "";
+    
     const vTags = document.getElementById('v-tags');
-    const vStats = document.getElementById('v-stats');
-
-    if (vId) vId.innerText = c.title || PAGE_ID;
-    if (vName) vName.innerText = c.name || "";
     if (vTags) vTags.innerHTML = c.tagsHtml || "";
+    
+    const vStats = document.getElementById('v-stats');
     if (vStats && c.statsHtml) vStats.innerHTML = c.statsHtml;
 
     const hContainer = document.getElementById('v-tab-headers');
     const cContainer = document.getElementById('v-tab-contents');
 
-    if (c.tabs && c.tabs.length > 0 && hContainer && cContainer) {
-        hContainer.innerHTML = '';
-        cContainer.innerHTML = '';
+    if (c.tabs?.length > 0 && hContainer && cContainer) {
+        const headerFrag = document.createDocumentFragment();
+        const contentFrag = document.createDocumentFragment();
+
         c.tabs.forEach((tab, i) => {
-            const isActive = i === 0 ? 'active' : '';
+            const isActive = i === 0;
             const tabId = `tab-${i}`;
 
             const btn = document.createElement('button');
-            btn.className = `tab-button ${isActive}`;
-            btn.setAttribute('data-tab', tabId);
-            btn.innerText = tab.name;
-            btn.onclick = () => switchTab(tabId); 
-            hContainer.appendChild(btn);
+            btn.className = `tab-button ${isActive ? 'active' : ''}`;
+            btn.dataset.tab = tabId;
+            btn.textContent = tab.name;
+            headerFrag.appendChild(btn);
 
             const pane = document.createElement('div');
-            pane.className = `tab-content ${isActive}`;
+            pane.className = `tab-content ${isActive ? 'active' : ''}`;
             pane.id = tabId;
             pane.innerHTML = tab.content;
-            cContainer.appendChild(pane);
+            contentFrag.appendChild(pane);
         });
+
+        hContainer.replaceChildren(headerFrag);
+        cContainer.replaceChildren(contentFrag);
+
+        hContainer.onclick = (e) => {
+            const tabId = e.target.dataset.tab;
+            if (tabId) switchTab(tabId);
+        };
     }
 }
 
 function searchText() {
     const box = document.getElementById('search-box');
-    if (!box) return;
-    const query = box.value.trim();
     const activeContent = document.querySelector('.tab-content.active');
-    if (!activeContent) return;
+    if (!box || !activeContent) return;
+
+    const query = box.value.trim();
 
     const prevHighlights = activeContent.querySelectorAll('.highlight');
     prevHighlights.forEach(span => {
-        const parent = span.parentNode;
-        parent.replaceChild(document.createTextNode(span.textContent), span);
-        parent.normalize();
+        span.replaceWith(document.createTextNode(span.textContent));
     });
+    activeContent.normalize();
 
     if (!query) return;
 
@@ -111,7 +116,7 @@ function searchText() {
 
     let currentNode;
     while (currentNode = walker.nextNode()) {
-        if (currentNode.textContent.match(regex)) {
+        if (regex.test(currentNode.textContent)) {
             nodesToReplace.push(currentNode);
         }
     }
@@ -120,13 +125,11 @@ function searchText() {
         nodesToReplace.forEach(node => {
             const span = document.createElement('span');
             span.innerHTML = node.textContent.replace(regex, '<span class="highlight">$1</span>');
-            node.parentNode.replaceChild(span, node);
+            node.replaceWith(span);
         });
 
         const firstMatch = activeContent.querySelector('.highlight');
-        if (firstMatch) {
-            firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        if (firstMatch) firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
         box.style.borderColor = "#00ff00";
     } else {
         box.style.borderColor = "#ff3333";
@@ -151,9 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (lightbox) {
         lightbox.onclick = (e) => {
-            if (e.target !== lightboxImg) {
-                lightbox.style.display = 'none';
-            }
+            if (e.target !== lightboxImg) lightbox.style.display = 'none';
         };
     }
 
@@ -171,18 +172,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    document.querySelectorAll('.tab-side-wrap').forEach(wrap => {
-        const tabs = wrap.querySelectorAll('.side-tab');
-        const panels = wrap.querySelectorAll('.side-panel');
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabs.forEach(t => t.classList.remove('active'));
-                panels.forEach(p => p.classList.remove('active'));
-                tab.classList.add('active');
-                const target = tab.getAttribute('data-target');
-                const panel = wrap.querySelector('#' + target);
-                if (panel) panel.classList.add('active');
-            });
+    document.addEventListener('click', (e) => {
+        const tab = e.target.closest('.side-tab');
+        if (!tab) return;
+        
+        const wrap = tab.closest('.tab-side-wrap');
+        const targetId = tab.getAttribute('data-target');
+        
+        wrap.querySelectorAll('.side-tab, .side-panel').forEach(el => {
+            el.classList.toggle('active', el === tab || el.id === targetId);
         });
     });
 });

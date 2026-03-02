@@ -36,6 +36,23 @@ window.handleAuth = async function(mode) {
     else mode === 'login' ? window.checkUser() : (statusBox.textContent = "CHECK EMAIL FOR LINK");
 };
 
+window.handleLogout = async function() {
+    try {
+        const { error } = await db.auth.signOut();
+        if (error) throw error;
+        
+        document.body.classList.remove('editor-active');
+        const url = new URL(window.location);
+        url.searchParams.delete('id');
+        window.history.replaceState({}, '', url);
+        
+        location.reload();
+    } catch (err) {
+        console.error("Logout failed:", err.message);
+        alert("Logout Error: " + err.message);
+    }
+};
+
 window.checkUser = async function() {
     const { data: { user } } = await db.auth.getUser();
     if (user) {

@@ -23,6 +23,16 @@ window.toggleSignup = function() {
     signupBtn.style.width = isLogin ? "100%" : "auto";
 };
 
+window.resetAuthUI = function() {
+    getEl('signup-extra').style.display = 'none';
+    getEl('login-btn').style.display = 'block';
+    getEl('back-to-login').style.display = 'none';
+    getEl('auth-title').textContent = "AUTH_REQUIRED";
+    getEl('signup-btn').textContent = "Request Access";
+    getEl('signup-btn').style.width = "auto";
+    getEl('auth-status').textContent = "";
+};
+
 window.handleAuth = async function(mode) {
     const email = getEl('email-field').value;
     const password = getEl('password-field').value;
@@ -36,16 +46,19 @@ window.handleAuth = async function(mode) {
     else mode === 'login' ? window.checkUser() : (statusBox.textContent = "CHECK EMAIL FOR LINK");
 };
 
+window.handleAuthSubmit = function() {
+    const isSignup = getEl('signup-extra').style.display === 'flex';
+    window.handleAuth(isSignup ? 'signup' : 'login');
+};
+
 window.handleLogout = async function() {
     try {
         const { error } = await db.auth.signOut();
         if (error) throw error;
-        
         document.body.classList.remove('editor-active');
         const url = new URL(window.location);
         url.searchParams.delete('id');
         window.history.replaceState({}, '', url);
-        
         location.reload();
     } catch (err) {
         console.error("Logout failed:", err.message);
@@ -79,7 +92,6 @@ window.updatePreview = function(val) {
     if (!val) return;
     const repoBase = '/AdySync-Backrooms-Database';
     let src = val.startsWith('http') ? val : `${repoBase}/${val.toLowerCase().startsWith('images/') ? val : 'Images/' + val}`;
-    
     const img = getEl('active-image');
     img.onerror = () => { img.src = `${repoBase}/Images/placeholder.png`; img.onerror = null; };
     img.src = src;
@@ -103,18 +115,15 @@ window.addTag = function() {
 window.loadData = async function() {
     const { data } = await db.from('levels').select('content').eq('id', CURRENT_ID).single();
     const content = data?.content || {};
-
     getEl('img-input').value = content.imageFile || `${CURRENT_ID}.png`;
     window.updatePreview(getEl('img-input').value);
     getEl('edit-lvl-id').textContent = content.title || CURRENT_ID;
     getEl('edit-lvl-name').textContent = content.name || "";
     getEl('edit-tags').innerHTML = content.tagsHtml || "";
     getEl('edit-stats').innerHTML = content.statsHtml || "";
-
     Object.keys(quillInstances).forEach(id => delete quillInstances[id]);
     getEl('tab-headers').innerHTML = "";
     getEl('tab-contents-container').innerHTML = "";
-
     if (content.tabs?.length) {
         content.tabs.forEach((t, i) => window.createNewTab(t.name, t.content, i === 0));
     }
@@ -125,7 +134,6 @@ window.saveToSupabase = async function() {
         name: ctrl.querySelector('.tab-button').textContent,
         content: quillInstances[ctrl.dataset.tabId].root.innerHTML
     }));
-
     const payload = {
         title: getEl('edit-lvl-id').textContent,
         name: getEl('edit-lvl-name').textContent,
@@ -134,22 +142,18 @@ window.saveToSupabase = async function() {
         imageFile: getEl('img-input').value,
         tabs
     };
-
     const { error } = await db.from('levels').upsert({ id: CURRENT_ID, content: payload });
     alert(error ? `Error: ${error.message}` : `SUCCESS: Data pushed to ${CURRENT_ID}`);
 };
 
-/* --- Tab Engine --- */
 window.setActiveTab = function(id) {
     document.querySelectorAll('.tab-button, .tab-content, .ql-toolbar').forEach(el => {
         el.classList.remove('active', 'active-toolbar');
         if (el.classList.contains('ql-toolbar')) el.style.setProperty('display', 'none', 'important');
     });
-
     const header = document.querySelector(`#header-${id} .tab-button`);
     const pane = getEl(`content-${id}`);
     const toolbar = pane?.previousElementSibling;
-
     if (header && pane) {
         header.classList.add('active');
         pane.classList.add('active');
@@ -163,7 +167,6 @@ window.setActiveTab = function(id) {
 
 window.createNewTab = function(name = "New Tab", content = "", isFirst = false) {
     const id = `tab_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-    
     const header = document.createElement('div');
     header.className = 'tab-controls';
     header.id = `header-${id}`;
@@ -174,12 +177,10 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
               onblur="this.contentEditable='false'">${name}</span>
         <button class="del-tab" onclick="window.deleteTab('${id}')">✕</button>`;
     getEl('tab-headers').appendChild(header);
-
     const pane = document.createElement('div');
     pane.className = 'tab-content';
     pane.id = `content-${id}`;
     getEl('tab-contents-container').appendChild(pane);
-
     const quill = new Quill(`#content-${id}`, {
         theme: 'snow',
         modules: {
@@ -196,10 +197,8 @@ window.createNewTab = function(name = "New Tab", content = "", isFirst = false) 
             ]
         }
     });
-
     if (content) quill.clipboard.dangerouslyPasteHTML(content);
     quillInstances[id] = quill;
-
     if (isFirst) window.setActiveTab(id);
     else pane.previousElementSibling.style.setProperty('display', 'none', 'important');
 };
@@ -209,11 +208,14 @@ window.deleteTab = (id) => {
     getEl(`header-${id}`)?.remove();
     getEl(`content-${id}`)?.remove();
     delete quillInstances[id]; 
-
     if (wasActive) {
         const first = document.querySelector('.tab-controls');
         if (first) window.setActiveTab(first.dataset.tabId);
     }
 };
+
+getEl('id-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') window.switchPage();
+});
 
 window.checkUser();
